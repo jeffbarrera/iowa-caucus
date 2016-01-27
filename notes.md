@@ -14,7 +14,6 @@ Surprisingly hard to find consistent data, the best I've got is Betfair for 2012
 
 - Betfair 2016: https://www.betfairpredicts.com
 - Betfair 2012 (data in the article): http://cosmiclog.nbcnews.com/_news/2012/01/03/9923436-political-markets-get-first-2012-test
-
 - 2016: http://predictwise.com/politics/2016-president-primaries
 - 2012 IEM: http://tippie.uiowa.edu/iem/markets/republicannomination.html
 - 2012 Intrade: https://webcache.googleusercontent.com/search?q=cache:Xjm9JnxmvjoJ:https://wenowproject.wordpress.com/2012/01/02/betting-on-iowa-2/+&cd=1&hl=en&ct=clnk&gl=us&client=safari 
