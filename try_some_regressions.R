@@ -82,6 +82,7 @@ lines(cand_lowess, col="orange")
 
 
 # Use linear regression with an epanechnikov window
+# see chart on p. 8 here: http://www.bauer.uh.edu/rsusmel/phd/ec1-26.pdf
 #  Epanechnikov is entirely contained within the -1,1 range and is 'steeper' than a gaussian
 #  https://en.wikipedia.org/wiki/Kernel_density_estimation
 # The Epanechnikov kernel is optimal in a mean square error sense
