@@ -23,7 +23,7 @@ test_vote_share <- data2012[data2012$primaryPoll=='iowa', 5]
 test_vote_share
 
 
-test_lm <- lm(test_vote_share ~ ., data=test_2012)
+test_lm <- lm(test_vote_share ~ betfair, data=test_2012)
 summary(test_lm)
 
 predict(test_lm, newdata=test_2016)
