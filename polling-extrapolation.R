@@ -88,6 +88,7 @@ for (candidate in results2008$Candidate) {
 linear_extrapolate_candidate("ROMNEY", polls2008, results2008)
 linear_extrapolate_candidate("HUCKABEE", polls2008, results2008)
 
+linear_extrapolate_candidate("MCCAIN", polls2008, results2008)
 
 
 
