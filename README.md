@@ -2,8 +2,10 @@
 GOP Iowa Caucus prediction challenge for Poli Sci 355B.
 
 # Progress Updates
+Figured this could be a helpful way for me to keep track of things
 
 ### 1/27/16
+Jeff
 - Built initial framework to extrapolate election-day vote shares from polling predictions
 - Need to add evaluation suite to more precisely test model accuracy
 - Need to weight polls by 538's rankings
