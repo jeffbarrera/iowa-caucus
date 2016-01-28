@@ -1,7 +1,9 @@
 POLLSTER,Start Date,End Date,days_to_caucus,Number of Observations,Population,Mode,Pollster URL,Source URL,Partisan,Affiliation,Trump,Cruz,Rubio,Carson,Bush,Christie,Rand Paul,Kasich,Huckabee,Fiorina,Santorum,Gilmore,Graham,Jindal,Pataki,Perry,Walker
+Bloomberg/Purple Strategies,2016-01-22,2016-01-26,4,1021,Likely Voters - Republican,Internet,http://elections.huffingtonpost.com/pollster/polls/bloomberg-purple-strategies-23612,,Nonpartisan,None,34,12,14,9,7,2,3,4,3,2,1,0,,,,,
 Morning Consult,2016-01-21,2016-01-24,7,1552,Registered Voters - Republican,Internet,http://elections.huffingtonpost.com/pollster/polls/morning-consult-23600,,Nonpartisan,None,40,11,9,10,7,3,2,2,3,1,1,,,,,,
 CNN,2016-01-21,2016-01-24,7,405,Registered Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/cnn-23592,,Nonpartisan,None,41,19,8,6,5,4,3,1,3,2,0,0,,,,,
 ABC/Post,2016-01-20,2016-01-24,6,356,Registered Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/abc-post-23591,,Nonpartisan,None,37,21,11,7,5,4,1,2,2,3,0,,,,,,
+Public Religion Research Institute,2016-01-20,2016-01-24,6,381,Registered Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/public-religion-research-institute-23613,,Nonpartisan,None,31,14,9,14,5,2,3,3,1,2,,,,,,,
 NBC/SurveyMonkey,2016-01-18,2016-01-24,5,2327,Registered Voters - Republican,Internet,http://elections.huffingtonpost.com/pollster/polls/nbc-surveymonkey-23599,,Nonpartisan,None,39,17,10,8,4,3,3,3,1,2,0,0,,,,,
 FOX,2016-01-18,2016-01-21,10,405,Likely Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/fox-23563,,Nonpartisan,None,34,20,11,8,4,3,2,4,2,1,0,0,,,,,
 Zogby (Internet),2016-01-19,2016-01-20,12,294,Likely Voters - Republican,Internet,http://elections.huffingtonpost.com/pollster/polls/zogby-internet-23562,,Nonpartisan,None,45,13,8,4,6,2,2,3,2,3,2,,,,,,

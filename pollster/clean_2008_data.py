@@ -8,7 +8,7 @@ candidates_2008 = ['GIULIANI' ,'HUCKABEE' ,'MCCAIN' ,'PAUL','ROMNEY', 'THOMPSON'
 
 # dumping 'Entry Date/Time (ET)'
 field_names = ['POLLSTER','Start Date','End Date','days_to_caucus','Number of Observations','Population','Mode', 'Pollster URL','Source URL','Partisan','Affiliation'] + candidates_2008
-files_2008 = {'national':'data/2008-national-gop-primary.csv', 'iowa':'data/2008-national-gop-primary.csv'}
+files_2008 = {'national':'data/2008-national-gop-primary.csv', 'iowa':'data/2008_iowa_gop_primary.csv'}
 
 
 def parse_poll_dates(date_value):
@@ -16,9 +16,10 @@ def parse_poll_dates(date_value):
     # 1. 2/24-26/08 <-- M/D-D/Y
     # 2. 1/31-2/2/08 <- M/D-M/D/Y
     # 3. 1/21/08 <-- single day poll, apparently
+    # 4. 12/31/07-1/2/08 <- 
     
     # We assume no poll spans two years, which I checked and is true.
-    
+    print date_value
     dates = date_value.strip().split('-')
     start_date = None
     end_date = None
@@ -31,15 +32,23 @@ def parse_poll_dates(date_value):
         start_date_parts = start_date_raw.strip().split('/')
         
         if len(end_date_parts) == 3:
-            # case #2
+            # case #2 or 4
             
-            year = int(int("20" + end_date_parts[2]))
+            year = int("20" + end_date_parts[2])
             end_date = date(year, int(end_date_parts[0]), int(end_date_parts[1]))
             
             if len(start_date_parts) == 2:
+                # case 2
                 
                 start_date = date(year, int(start_date_parts[0]), int(start_date_parts[1]))
                 #print "2: Got start date %s end date %s from %s" % (start_date, end_date, date_value)
+            
+            elif len(start_date_parts) == 3:
+                # case 4
+                print "#4: %s" % (date_value)
+                start_date = date(int("20" + start_date_parts[2]), int(start_date_parts[0]), int(start_date_parts[1]))
+                
+            
                 
             else:
                 print "unparseable date: %s" % (date_value)
@@ -79,8 +88,8 @@ def parse_poll_dates(date_value):
             assert False
             
         
-        
-        start_date = date(int("20"+date_parts[2]), int(date_parts[1]), int(date_parts[0]))
+        print "3: %s" % (date_value)
+        start_date = date(int("20"+date_parts[2]), int(date_parts[0]), int(date_parts[1]))
         end_date = start_date
         
         #print "3: Got start date %s end date %s from %s" % (start_date, end_date, date_value)
@@ -89,17 +98,22 @@ def parse_poll_dates(date_value):
         
     else:
         print "unparseable date: %s" % (date_value)
-        assert False
+        start_date = 1
+        end_date = 1
     
     return [start_date, end_date]
 
 def get_midpoint(start_date, end_date):
     # returns middle of polling period--favors the day closer to the end if duration is even. 
-    poll_duration = end_date - start_date
-    half_length = poll_duration.days / 2
-    midpoint = end_date + timedelta(int(half_length))
-    return midpoint
-
+    try:    
+        poll_duration = end_date - start_date
+    
+        half_length = poll_duration.days / 2
+        midpoint = end_date + timedelta(int(half_length))
+        return midpoint
+    except TypeError:
+        return None
+        
 def parse_npop(raw_npop):
     npop_parts = raw_npop.strip().split(' ')
     if len(npop_parts) == 2:
@@ -143,8 +157,11 @@ if __name__ == '__main__':
                 [start_date, end_date] = parse_poll_dates(raw_date)
 
                 midpoint = get_midpoint(start_date, end_date)
-                days_before_caucus_td = caucus_date_2008 - midpoint
-                days_before_caucus = days_before_caucus_td.days
+                if midpoint:
+                    days_before_caucus_td = caucus_date_2008 - midpoint
+                    days_before_caucus = days_before_caucus_td.days
+                else:
+                    days_before_caucus = -1
             
                 # add data to row so it gets written
                 row['days_to_caucus'] = days_before_caucus            
