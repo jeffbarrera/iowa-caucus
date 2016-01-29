@@ -38,3 +38,11 @@ Surprisingly hard to find consistent data, the best I've got is Betfair for 2012
 ------------------------
 
 - build model that extrapolates polling averages per candidate over time
+
+
+
+
+- consider extremizing state/natl difference
+- consider cutting off polling earlier than 30 days
+- 
+

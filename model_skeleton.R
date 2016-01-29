@@ -5,6 +5,7 @@ library(glmnet)
 library(Metrics)
 
 
+
 ##############
 # CONSTANTS
 ##############
@@ -109,10 +110,15 @@ results2012 <- cleanResults(results2012)
 # Given a candidate, polling_df, and results_df, generate a simple linear model regressing vote shares over time
 # return predicted vote share on election day
 
+
+## add plot boolean var
+
 linearExtrapolateCandidate <- function(candidate, polling_df, results_df) {
 
 	# find col index for that candidate's name
 	cand_indx <- which(colnames(polling_df) == candidate)
+
+	######## consider killing early models
 
 	# check if there are any rows that aren't NA
 	if(all(is.na(polling_df[,cand_indx]))) {
@@ -285,7 +291,7 @@ combinePredictorsIntoModel <- function(polling_df, results_df) {
 
 	# build matrix of predictors
 	preds_train <- matrix(nrow=nrow(results_df), ncol=2)
-	rownames(preds) <- results_df$candidate
+	rownames(preds_train) <- results_df$candidate
 
 	# add polling model predictions
 	preds_train[,1] <- predCandidates(polling_df, results_df, linearExtrapolateCandidate)$vote_share
@@ -345,6 +351,8 @@ preds_using2008 <- combinePredictorsIntoModel(polls2008_iowa, results2008)
 preds_using2012 <- combinePredictorsIntoModel(polls2012_iowa, results2012) # bugging
 
 preds_using2008
+
+scaleToVoteShares(preds_using2008)
 
 # applyModelTo2016
 # ----------------
