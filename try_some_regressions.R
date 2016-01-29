@@ -96,7 +96,15 @@ lines(cand_epan$x.out, cand_epan$est,  col="red")
 
 # it doesn't work with predict, so use a linear interpolation function
 max_x = max(cand_epan$x.out)
-y_estimate = approx(cand_epan$x.out, cand_epan$est,max_x-5)
+trend_start_x = max_x - 5
+y_estimate_trend_start = approx(cand_epan$x.out, cand_epan$est,trend_start_x)
+y_val_trend_end = approx(cand_epan$x.out, cand_epan$est,max_x)
+
+# just using 5 as arbitrary value, but linearly interpolate to y intercept
+
+#### switched the x and y axes in *just the below* so that we get the x-intercept back
+poll_trend <- structure(list(  x=c(y_estimate_trend_start$y,y_val_trend_end$y), y=c(trend_start_x, max_x)), .Names = c("x", "y"))
+y_intercept = unname(lm(x~y,data=poll_trend)$coefficients[1])
 
 
 # Standard linear regression
