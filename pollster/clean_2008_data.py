@@ -41,7 +41,7 @@ def parse_poll_dates(date_value):
                 # case 2
                 
                 start_date = date(year, int(start_date_parts[0]), int(start_date_parts[1]))
-                #print "2: Got start date %s end date %s from %s" % (start_date, end_date, date_value)
+                print "2: Got start date %s end date %s from %s" % (start_date, end_date, date_value)
             
             elif len(start_date_parts) == 3:
                 # case 4
@@ -71,7 +71,7 @@ def parse_poll_dates(date_value):
                 end_date = date(year, start_month, end_day)
                 start_date = date(year,start_month, start_day)
                 
-                #print "1: Got start date %s end date %s from %s" % (start_date, end_date, date_value)
+                print "1: Got start date %s end date %s from %s" % (start_date, end_date, date_value)
                 
                 
             else:
@@ -98,6 +98,7 @@ def parse_poll_dates(date_value):
         
     else:
         print "unparseable date: %s" % (date_value)
+        assert False
         start_date = 1
         end_date = 1
     
