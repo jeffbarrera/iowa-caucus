@@ -1,4 +1,7 @@
 POLLSTER,Start Date,End Date,days_to_caucus,Number of Observations,Population,Mode,Pollster URL,Source URL,Partisan,Affiliation,Trump,Cruz,Rubio,Carson,Bush,Christie,Rand Paul,Kasich,Huckabee,Fiorina,Santorum,Gilmore,Graham,Jindal,Pataki,Perry,Walker
+Gravis Marketing/One America News,2016-01-26,2016-01-27,5,724,Likely Voters - Republican,Automated Phone,http://elections.huffingtonpost.com/pollster/polls/gravis-marketing-one-america-news-23629,,Sponsor,Rep,31,27,13,7,6,3,,4,2,3,1,,,,,,
+PPP (D-Progress Iowa),2016-01-26,2016-01-27,5,780,Likely Voters - Republican,IVR/Online,http://elections.huffingtonpost.com/pollster/polls/ppp-d-progress-iowa-23622,,Sponsor,Dem,31,23,14,9,4,2,,2,4,3,1,1,,,,,
+NBC/WSJ/Marist,2016-01-24,2016-01-26,5,450,Likely Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/nbc-wsj-marist-23614,,Nonpartisan,None,32,25,18,8,4,2,,2,2,2,,,,,,,
 Monmouth University,2016-01-23,2016-01-26,5,500,Likely Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/monmouth-university-23608,,Nonpartisan,None,30,23,16,10,4,2,,3,3,2,1,0,,,,,
 ARG,2016-01-21,2016-01-24,7,400,Likely Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/arg-23581,,Nonpartisan,None,33,26,11,7,3,4,,3,2,1,1,0,,,,,
 Quinnipiac,2016-01-18,2016-01-24,5,651,Likely Voters - Republican,Live Phone,http://elections.huffingtonpost.com/pollster/polls/quinnipiac-23590,,Nonpartisan,None,31,29,13,7,4,3,,1,2,1,0,,,,,,
