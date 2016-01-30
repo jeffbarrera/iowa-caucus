@@ -27,7 +27,8 @@ if __name__ == "__main__":
         print ">>> BANDWIDTH: %s" % bandwidth
         
         for scope in ['iowa']:
-
+            error_array = []
+            
             for year in [2008, 2012]:
 
                 print "Handling %s %s" % (year, scope)
@@ -38,7 +39,6 @@ if __name__ == "__main__":
                 # r object for dtc
                 dtc_vec = robjects.IntVector(days_to_caucus)
                 
-                error_array = []
             
                 #print "dtc:\n%s" % days_to_caucus
                 for candidate in candidates[year]:
