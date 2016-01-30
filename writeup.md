@@ -30,8 +30,14 @@ TKTK
 ## Regressing in-state, national polling
 TKTK
 
+## Regress 2012 trading markets
+TKTK
 
+## Maybe regress endorsements afterall?
+TKTK
 
+## Poll weights by pollster rating? 
+Hmm, the house effects are in terms of dem vs rep. Not sure how that works out here. 
 
 ## Features not included
 
