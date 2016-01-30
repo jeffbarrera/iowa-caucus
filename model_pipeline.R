@@ -35,6 +35,10 @@ colnames(candidates_2016) <- c('candidate')
 polls2008_iowa <- read.csv('pollster/data/cleaned_2008_iowa.csv', stringsAsFactors=FALSE)
 polls2012_iowa <- read.csv('pollster/data/cleaned_2012_iowa.csv', stringsAsFactors=FALSE)
 polls2016_iowa <- read.csv('pollster/data/cleaned_2016_iowa.csv', stringsAsFactors=FALSE)
+polls2008_national <- read.csv('pollster/data/cleaned_2008_national.csv', stringsAsFactors=FALSE)
+polls2012_national <- read.csv('pollster/data/cleaned_2012_national.csv', stringsAsFactors=FALSE)
+polls2016_national <- read.csv('pollster/data/cleaned_2016_national.csv', stringsAsFactors=FALSE)
+
 
 
 
@@ -62,6 +66,10 @@ cleanPolling <- function(df) {
 polls2008_iowa <- cleanPolling(polls2008_iowa)
 polls2012_iowa <- cleanPolling(polls2012_iowa)
 polls2016_iowa <- cleanPolling(polls2016_iowa)
+
+polls2008_national <- cleanPolling(polls2008_national)
+polls2012_national <- cleanPolling(polls2012_national)
+polls2016_national <- cleanPolling(polls2016_national)
 
 cleanResults <- function(df) {
 
@@ -93,10 +101,7 @@ results2012 <- cleanResults(results2012)
 
 
 
-# predictFromPollTrends
-# ---------------------
-# Predict election day vote share by extrapolating from weighted polls regressed against time. 
-# Return df/matrix of candidate names (rows) and predicted vote shares from different models (cols)
+
 
 
 
@@ -110,10 +115,7 @@ results2012 <- cleanResults(results2012)
 # Given a candidate, polling_df, and results_df, generate a simple linear model regressing vote shares over time
 # return predicted vote share on election day
 
-
-## add plot boolean var
-
-linearExtrapolateCandidate <- function(candidate, polling_df, results_df) {
+linearExtrapolateCandidate <- function(candidate, polling_df, results_df, plot) {
 
 	# find col index for that candidate's name
 	cand_indx <- which(colnames(polling_df) == candidate)
@@ -130,23 +132,26 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df) {
 		# simple linear model
 		lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus, data=polling_df)
 
-		# plot data
-		plot(x=polling_df$days_to_caucus,
-			y=polling_df[,cand_indx],
-			# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
-			xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
-			xlab="Days to Caucus",
-			ylab="Vote Share",
-			main=candidate)
+		if(plot == TRUE) {
 
-		# add regression line
-		abline(lm_model,
-			col="red",
-			lwd="2")
+			# plot data
+			plot(x=polling_df$days_to_caucus,
+				y=polling_df[,cand_indx],
+				# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
+				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
+				xlab="Days to Caucus",
+				ylab="Vote Share",
+				main=candidate)
 
-		# add actual results line
-		abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
-			lwd=2)
+			# add regression line
+			abline(lm_model,
+				col="red",
+				lwd="2")
+
+			# add actual results line
+			abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
+				lwd=2)
+		}
 
 		# predict vote share on election day
 		election_day_df <- data.frame(c(candidate),c("0"))
@@ -161,13 +166,13 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df) {
 
 
 
-complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df) {
+complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df, plot) {
 
 	# find col index for that candidate's name
 	cand_indx <- which(colnames(polling_df) == candidate)
 
 	# check if there are any rows that aren't NA
-	if(all(is.na(polling_df[,cand_indx]))) {
+	if (all(is.na(polling_df[,cand_indx]))) {
 		print(candidate)
 		print("All observations were NA")
 		return(0)
@@ -176,23 +181,26 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df)
 		# simple linear model
 		lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus + I(days_to_caucus^2), data=polling_df)
 
-		# plot data
-		plot(x=polling_df$days_to_caucus,
-			y=polling_df[,cand_indx],
-			# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
-			xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
-			xlab="Days to Caucus",
-			ylab="Vote Share",
-			main=candidate)
+		if(plot == TRUE) {
 
-		# add regression line
-		abline(lm_model,
-			col="red",
-			lwd="2")
+			# plot data
+			plot(x=polling_df$days_to_caucus,
+				y=polling_df[,cand_indx],
+				# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
+				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
+				xlab="Days to Caucus",
+				ylab="Vote Share",
+				main=candidate)
 
-		# add actual results line
-		abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
-			lwd=2)
+			# add regression line
+			abline(lm_model,
+				col="red",
+				lwd="2")
+
+			# add actual results line
+			abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
+				lwd=2)
+		}
 
 		# predict vote share on election day
 		election_day_df <- data.frame(c(candidate),c("0"))
@@ -205,9 +213,9 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df)
 	}
 }
 
-linearExtrapolateCandidate('mccain', polls2008_iowa, results2008)
+linearExtrapolateCandidate('mccain', polls2008_iowa, results2008, TRUE)
 
-complexLinearExtrapolateCandidate('mccain', polls2008_iowa, results2008)
+complexLinearExtrapolateCandidate('mccain', polls2008_iowa, results2008, FALSE)
 
 
 # predCandidates
@@ -221,7 +229,7 @@ predCandidates <- function(polling_df, results_df, model) {
 	colnames(pred_votes) <- c('candidate', 'vote_share')
 
 	for (cand in results_df$candidate) {
-		pred_votes$vote_share[pred_votes$candidate == cand] <- model(cand, polling_df, results_df)
+		pred_votes$vote_share[pred_votes$candidate == cand] <- model(cand, polling_df, results_df, FALSE)
 	}
 	return(pred_votes)
 }
@@ -260,17 +268,36 @@ testPollTrendsModel(polls2012_iowa, results2012, linearExtrapolateCandidate)
 
 
 
-# predictFromLatestPolling
-# ------------------------
-# Take the average of the weighted most recent polls for a candidate -- maybe last week or few days (could try Monte Carlo to see what time interval works best).
-# Return df/matrix of candidate names (rows) and predicted vote shares
-
 
 
 
 ##############
 # BUILD & TEST COMBINED MODEL OPTIONS
 ##############
+
+
+# buildPredictionMatrix
+# ---------------------
+# Given polling and results dfs, construct a matrix of observations to use in regression models
+buildPredictionMatrix <- function(state_polling_df, natl_polling_df, results_df) {
+
+	# construct vector of predictor names
+	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl')
+
+	# build matrix of predictors
+	preds <- matrix(nrow=nrow(results_df), ncol=length(pred_names))
+	rownames(preds) <- results_df$candidate
+
+	# add polling model predictions
+	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate)$vote_share
+	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate)$vote_share
+	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate)$vote_share
+
+	# add predictor names to matrix
+	colnames(preds) <- pred_names
+
+	return(preds)
+}
 
 
 # scaleToVoteShares
@@ -282,84 +309,90 @@ scaleToVoteShares <- function(raw_preds) {
 }
 
 
+# scaleSortResults
+# ----------------
+# Scale and sort predictions
+scaleSortResults <- function(preds) {
+	scaled_preds <- scaleToVoteShares(preds)
+	sorted_preds <- scaled_preds[order(scaled_preds[,1], decreasing=TRUE),]
+	df_preds <- data.frame(sorted_preds)
+	return(df_preds)
+}
+
+
 # combinePredictorsIntoModel
 # --------------------------
 # Using the outputs from predictFromPollTrends and predictFromLatestPolling outputs for both Iowa and national polling, build a model applying these predictors to 2008 and 2012 data. See which combinations work best, maybe with LOOCV? If have time, could try additional predictors -- contributions, prediction markets, etc.
 # Return df/matrix of candidate names (rows) and predicted vote shares from different models (cols)
 
-combinePredictorsIntoModel <- function(polling_df, results_df) {
+combinePredictorsIntoModel <- function(polling_df, results_df, combined) {
 
-	# build matrix of predictors
-	preds_train <- matrix(nrow=nrow(results_df), ncol=2)
-	rownames(preds_train) <- results_df$candidate
+	if (combined) {
 
-	# add polling model predictions
-	preds_train[,1] <- predCandidates(polling_df, results_df, linearExtrapolateCandidate)$vote_share
-	preds_train[,2] <- predCandidates(polling_df, results_df, complexLinearExtrapolateCandidate)$vote_share
+		# create matrices to use in models
+		preds_2008 <- buildPredictionMatrix(polls2008_iowa, polls2008_national, results2008)
+		preds_2012 <- buildPredictionMatrix(polls2012_iowa, polls2012_national, results2012)
 
-	# add predictor names to matrix
-	colnames(preds_train) <- c('basic_linear', 'complex_linear')
+		# combine into overall matrix
+		preds_train <- rbind(preds_2008, preds_2012)
+		results_train <- rbind(results2008, results2012)
 
+	} else {
 
-	# build matrix of 2016 predictors
-	preds_2016 <- matrix(nrow=nrow(candidates_2016), ncol=2)
-	rownames(preds_2016) <- candidates_2016$candidate
+		# create matrix to use in models
+		preds_train <- buildPredictionMatrix(polling_df, results_df)
+		results_train <- results_df
+	}
 
-	# add polling model predictions
-	preds_2016[,1] <- predCandidates(polls2016_iowa, candidates_2016, linearExtrapolateCandidate)$vote_share
-	preds_2016[,2] <- predCandidates(polls2016_iowa, candidates_2016, complexLinearExtrapolateCandidate)$vote_share
-
-	# add predictor names to matrix
-	colnames(preds_2016) <- c('basic_linear', 'complex_linear')
-
-
+	# build matrix to predict 2016
+	preds_2016 <- buildPredictionMatrix(polls2016_iowa, candidates_2016)
 	
 
 	# run simple linear regression 
-	linear_model <- lm(results_df$percentage ~ ., data=as.data.frame(preds_train))
-	summary(linear_model)
-	lm_preds <- predict(linear_model, newdata=as.data.frame(preds_train))
+	# linear_model <- lm(results_df$percentage ~ ., data=as.data.frame(preds_train))
+	# summary(linear_model)
+	# lm_preds <- predict(linear_model, newdata=as.data.frame(preds_train))
 
-	# check RMSE
-	rmse(results_df$percentage, lm_preds)
+	# # check RMSE
+	# rmse(results_df$percentage, lm_preds)
 
-	# try predicting 2016 using linear model
-	lm_preds_2016 <- predict(linear_model, newdata=as.data.frame(preds_2016))
+	# # try predicting 2016 using linear model
+	# lm_preds_2016 <- predict(linear_model, newdata=as.data.frame(preds_2016))
 
 
 
 
 	# run LASSO on predictors
-	lasso <- glmnet(x = preds_train, y = results_df$percentage)
+	lasso <- glmnet(x = preds_train, y = results_train$percentage)
 	summary(lasso)
 
 	# cross validate lasso
-	lasso_cv<- cv.glmnet(x = preds_train, y = results_df$percentage)
+	lasso_cv<- cv.glmnet(x = preds_train, y = results_train$percentage)
 	plot(lasso_cv)
+
+	# TURN ^ INTO LOOCV
+
+	# check RMSE
+	lasso_train_preds <- predict(lasso, newx=preds_train, s = lasso_cv$lambda.min )
+	print("RMSE:")
+	print(rmse(results_train$percentage, lasso_train_preds))
 
 	# predict 2016 using lasso
 	lasso_preds <- predict(lasso, newx=preds_2016, s = lasso_cv$lambda.min )
 
-	# check RMSE
-	rmse(results_df$percentage, lasso_preds)
 
-	return(lasso_preds)
+	# scale and sort results
+	df_preds_2016 <- scaleSortResults(lasso_preds)
+
+	return(df_preds_2016)
 }
 
-
-preds_using2008 <- combinePredictorsIntoModel(polls2008_iowa, results2008)
-preds_using2012 <- combinePredictorsIntoModel(polls2012_iowa, results2012) # bugging
-
-preds_using2008
-
-scaleToVoteShares(preds_using2008)
-
-# applyModelTo2016
-# ----------------
-# Use the model/submodels (predictFromPollTrends, etc) to forecast vote shares for the 2016 candidates.
-# Return df/matrix of candidate names (rows) and predicted vote shares from different models (cols)
+combinePredictorsIntoModel(polls2008_iowa, results2008, FALSE)
+combinePredictorsIntoModel(polls2012_iowa, results2012, TRUE)
 
 
+
+predCandidates(polls2008_national, results2008, linearExtrapolateCandidate)$vote_share
 
 
 
