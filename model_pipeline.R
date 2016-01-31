@@ -115,6 +115,7 @@ eplog$candidate <- tolower(eplog$candidate)
 # PREDICT POLL TRENDS
 ##############
 
+#### LINEAR MODELS
 
 # linearExtrapolateCandidate
 # --------------------------
@@ -185,7 +186,7 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 	} else {
 
 		# simple linear model
-		lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus + I(days_to_caucus^2) + I(days_to_caucus^3) + I(days_to_caucus^4), data=polling_df)
+		lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus + I(days_to_caucus^2) + I(days_to_caucus^3), data=polling_df)
 
 		if(plot == TRUE) {
 
@@ -222,6 +223,9 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 	}
 }
 
+
+#### EPANECHNIKOV
+
 chooseEpanechnikovBandwidth <- function(eplog_mse) {
 	lowest_mse_indx <- which(eplog_mse$mse == min(eplog_mse$mse))
 	lowest_mse_bw <- eplog_mse$bw_value[lowest_mse_indx]
@@ -229,16 +233,6 @@ chooseEpanechnikovBandwidth <- function(eplog_mse) {
 }
 
 epanechnikovExtrapolateCandidate <- function(candidate_name, year_scope, results_df, plot) {
-
-	# print(deparse(substitute(polling_df)))
-
-
-	# # extract year and scope from polling_df name
-	# polling_df_str <- deparse(substitute(polling_df))
-	# # strip out "polls"
-	# year_scope_str <- sub("polls", "", polling_df_str)
-	# # create list with year and scope
-	# year_scope <- strsplit(year_scope_str, "_", fixed=TRUE)
 
 	# pull pred_vote_share from eplog
 	ep_bw <- chooseEpanechnikovBandwidth(eplog_mse)
@@ -264,7 +258,6 @@ predCandidates <- function(polling_df, results_df, model) {
 	return(pred_votes)
 }
 
-predCandidates(c(2008, "iowa"), results2008, epanechnikovExtrapolateCandidate)
 
 # calcRMSE
 # --------
@@ -292,15 +285,6 @@ testPollTrendsModel <- function(polling_df, results_df, model) {
 }
 
 
-testPollTrendsModel(polls2008_iowa, results2008, linearExtrapolateCandidate)
-testPollTrendsModel(polls2012_iowa, results2012, linearExtrapolateCandidate)
-
-
-
-
-
-
-
 
 ##############
 # BUILD & TEST COMBINED MODEL OPTIONS
@@ -313,7 +297,8 @@ testPollTrendsModel(polls2012_iowa, results2012, linearExtrapolateCandidate)
 buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, state, results_df) {
 
 	# construct vector of predictor names
-	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl', 'ep_iowa')
+	# pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl', 'ep_iowa')
+	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl')
 
 	print(head(results_df))
 
@@ -325,7 +310,7 @@ buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, state
 	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate)$vote_share
 	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate)$vote_share
 	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate)$vote_share
-	preds[,4] <- predCandidates(c(year, state), results_df, epanechnikovExtrapolateCandidate)$vote_share
+	# preds[,4] <- predCandidates(c(year, state), results_df, epanechnikovExtrapolateCandidate)$vote_share
 
 	# add predictor names to matrix
 	colnames(preds) <- pred_names
@@ -402,13 +387,6 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	# run simple linear regression 
 	linear_model <- lm(results_train$percentage ~ ., data=as.data.frame(preds_train))
 	print(summary(linear_model))
-	# lm_preds <- predict(linear_model, newdata=as.data.frame(preds_train))
-
-	# # check RMSE
-	# rmse(results_df$percentage, lm_preds)
-
-	# # try predicting 2016 using linear model
-	# lm_preds_2016 <- predict(linear_model, newdata=as.data.frame(preds_2016))
 
 	# run LASSO on predictors
 	lasso <- glmnet(x = preds_train, y = results_train$percentage)
@@ -426,7 +404,6 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	# predict 2016 using lasso
 	lasso_preds <- predict(lasso, newx=preds_2016, s = lasso_cv$lambda.min )
 
-
 	# scale and sort results
 	df_preds_2016 <- scaleSortResults(lasso_preds)
 
@@ -438,15 +415,10 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 combinePredictorsIntoModel(polls2008_iowa, polls2008_national, results2008, FALSE)
 combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
-# lasso <- combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
+length(lasso$lambda)
 
-lasso$beta[which(lasso$lambda == lasso_cv$lambda.min)]
-
-
-
-
-
+names(lasso)
 
 
 
