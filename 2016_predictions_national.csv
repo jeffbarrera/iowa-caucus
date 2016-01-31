@@ -1,0 +1,9 @@
+window_type,bw_value,year,scope,trendline_width,candidate,pre_interpolation,estimate
+epanechnikov,13,2016,national,14,Trump,34.2435493516,33.5434675363
+epanechnikov,13,2016,national,14,Cruz,16.8116109377,16.7332749392
+epanechnikov,13,2016,national,14,Rubio,10.5829105803,10.6186342116
+epanechnikov,13,2016,national,14,Carson,9.51556399107,9.75151340547
+epanechnikov,13,2016,national,14,Bush,5.44029661283,5.42628430979
+epanechnikov,13,2016,national,14,Christie,2.32172871718,2.09413801662
+epanechnikov,13,2016,national,14,Kasich,2.61592508362,2.65324370636
+epanechnikov,13,2016,national,14,Huckabee,1.70799374167,1.6043111544
