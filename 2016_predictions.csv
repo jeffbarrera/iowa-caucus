@@ -1,0 +1,10 @@
+window_type,bw_value,year,scope,trendline_width,candidate,pre_interpolation,estimate
+epanechnikov,13,2016,iowa,14,Trump,27.109601231,26.8051891266
+epanechnikov,13,2016,iowa,14,Cruz,24.7991323854,24.5168173691
+epanechnikov,13,2016,iowa,14,Rubio,14.5111139949,14.8436581102
+epanechnikov,13,2016,iowa,14,Carson,9.90547079216,10.1421334728
+epanechnikov,13,2016,iowa,14,Bush,3.52640848334,3.40156835598
+epanechnikov,13,2016,iowa,14,Christie,2.05118555459,1.82654197387
+epanechnikov,13,2016,iowa,14,Paul,4.68376559574,4.83989435522
+epanechnikov,13,2016,iowa,14,Kasich,1.92671622699,1.84286025872
+epanechnikov,13,2016,iowa,14,Huckabee,2.8073450622,2.86434492223

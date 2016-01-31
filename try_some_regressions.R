@@ -23,9 +23,11 @@ setwd("/Users/jfenton/github-whitelabel/polisci_355b/iowa-caucus")
 
 # load results datasets
 results2008 <- read.csv('results_2008.csv', stringsAsFactors=FALSE)
+results2012 <- read.csv('results_2012.csv', stringsAsFactors=FALSE)
 
 # load polling datasets
 polls2008 <- read.csv('pollster/data/cleaned_2008_iowa.csv', stringsAsFactors=FALSE)
+polls2012 <- read.csv('pollster/data/cleaned_2012_iowa.csv', stringsAsFactors=FALSE)
 
 
 
@@ -48,8 +50,8 @@ cleanData <- function(df) {
 }
 
 polls2008 <- cleanData(polls2008)
+polls2012 <- cleanData(polls2012)
 
-head(polls2008)
 
 
 
@@ -58,24 +60,30 @@ head(polls2008)
 # play with data
 ##############
 
-candidate = "ROMNEY"
-polling_df = na.omit(polls2008)
+#candidate = "ROMNEY"
+candidate = "Santorum"
 
 
+# polling_df = na.omit(polls2012)
 
+polling_df = polls2012
+results_df = results2012
 
 cand_indx <- which(colnames(polling_df) == candidate)
 
 
-this_df = data.frame(polls2008[,cand_indx], polls2008$days_to_caucus)
+this_df = data.frame(polls2012[,cand_indx], polls2012$days_to_caucus)
 colnames(this_df) <- c("candidate_poll", "days_to_caucus")
 this_df = na.omit(this_df)
 this_df$days_to_caucus = -this_df$days_to_caucus
 
 
-plot(candidate_poll ~ days_to_caucus, data=this_df)
-plot(candidate_poll ~ days_to_caucus, data=this_df, xlim=c(-100,0))
+# plot(candidate_poll ~ days_to_caucus, data=this_df)
+plot(candidate_poll ~ days_to_caucus, data=this_df, xlim=c(-100,0), ylim=c(0,40))
 
+# add actual results line
+abline(h=results_df[results_df$Candidate==candidate, VOTE_SHARE_COL], lwd=2)
+	
 # Try lowess regression using a 20% sample of the data. (default is 2/3). 
 cand_lowess = lowess(this_df$days_to_caucus, this_df$candidate_poll, f=.2)
 lines(cand_lowess, col="orange")
@@ -91,7 +99,7 @@ lines(cand_epan$x.out, cand_epan$est,  col="red")
 
 
 # Second order polynomial regression with an epanechnikov window
-cand_epan <- lpepa(this_df$days_to_caucus, this_df$candidate_poll, bandw=5, order=2)
+cand_epan <- lpepa(this_df$days_to_caucus, this_df$candidate_poll, bandw=5, order=2, n.out=1000)
 lines(cand_epan$x.out, cand_epan$est,  col="red")
 
 # it doesn't work with predict, so use a linear interpolation function

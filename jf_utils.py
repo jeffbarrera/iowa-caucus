@@ -9,7 +9,7 @@ importr('lpridge')
 candidates = {
     2008:['GIULIANI','HUCKABEE','MCCAIN','PAUL','ROMNEY','THOMPSON'],
     2012:['Romney','Gingrich','Santorum','Paul','Cain','Huntsman','Perry'],
-    2016:['Trump','Cruz','Rubio','Carson','Bush','Christie','Rand Paul','Kasich','Huckabee','Fiorina','Santorum','Gilmore','Graham','Jindal','Pataki','Perry','Walker']
+    2016:['Trump','Cruz','Rubio','Carson','Bush','Christie','Paul','Kasich','Huckabee']
 }
 
 # note capitalization. Sigh. 
@@ -60,7 +60,8 @@ def convert_nonints_to_na(array):
     return [array, count]
     
     
-# estimators
+# estimators -- these just take the final value of the estimate. 
+# should be rewritten to cut off a few days before the election and interpolate the rest. 
 
 def estimate_epa(bandwidth):
     

@@ -6,7 +6,7 @@ from clean_2008_data import get_midpoint
 from caucus_dates import iowa_caucus_dates
 
 candidates = {
-    2016:['Trump','Cruz','Rubio','Carson','Bush','Christie','Rand Paul','Kasich','Huckabee','Fiorina','Santorum','Gilmore','Graham','Jindal','Pataki','Perry','Walker'],
+    2016:['Trump','Cruz','Rubio','Carson','Bush','Christie','Paul','Kasich','Huckabee'],
     2012:['Romney','Gingrich','Santorum','Paul','Cain','Huntsman','Perry']
     }
 
