@@ -632,7 +632,7 @@ _Comparison of different extrapolation techniques applied to Mitt Romney in 2012
 
 Testing scripts are here for [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv));  [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
 
-Arguably running this test naively--that is, just testing it on 2008 and 2012 without any cross-validation--could lead to a type of overfitting, but we'd expect the size of improvement to be minimal.
+Arguably running this test naively--that is, just testing it on 2008 and 2012 without any cross-validation--could lead to a type of overfitting, but we'd expect the size of improvement to be minimal. We [noticed](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse_cycle.csv) that MSE was minimized for the 2008 and 2012 cycle with a bandwith of 13 and 14 days respectively, which suggests there are similar dynamics (despite the races being vary different).
 
 ```{r, include=FALSE}
 
