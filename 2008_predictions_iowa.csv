@@ -1,0 +1,7 @@
+window_type,bw_value,year,scope,trendline_width,candidate,pre_interpolation,estimate
+epanechnikov,13,2008,iowa,2,GIULIANI,5.6574669264,4.75655030382
+epanechnikov,13,2008,iowa,2,HUCKABEE,29.111091258,29.3471710368
+epanechnikov,13,2008,iowa,2,MCCAIN,11.8318334546,11.4014965884
+epanechnikov,13,2008,iowa,2,PAUL,6.51561399151,6.62193683482
+epanechnikov,13,2008,iowa,2,ROMNEY,28.6326263203,29.8453579126
+epanechnikov,13,2008,iowa,2,THOMPSON,11.1473948596,11.8423900697
