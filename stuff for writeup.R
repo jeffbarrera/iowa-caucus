@@ -1,16 +1,3 @@
----
-title: Challenge 1 &mdash; Iowa Caucus Predictions
-author: Jeffrey Barrera & Jacob Fenton
-output: 
-  pdf_document:
-    includes:
-      in_header: header.tex
-geometry: margin=1in
----
-
-```{r, echo=FALSE, message=FALSE, include=FALSE}
-
-
 ##############
 # IMPORT LIBRARIES
 ##############
@@ -158,6 +145,8 @@ averageLatestPollingCandidate <- function(candidate, polling_df, results_df, tim
 	}
 }
 
+averageLatestPollingCandidate("mccain", polls2008_national, results2008, 20)
+
 #### LINEAR MODELS
 
 # linearExtrapolateCandidate
@@ -174,6 +163,8 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 
 	# check if there are any rows that aren't NA
 	if(all(is.na(polling_df[,cand_indx]))) {
+		print(candidate)
+		print("All observations were NA")
 		return(0)
 	} else {
 
@@ -189,8 +180,7 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
 				xlab="Days to Caucus",
 				ylab="Vote Share",
-				#main=toupper(candidate),
-        main="Simple Linear")
+				main=candidate)
 
 			# add regression line
 			abline(lm_model,
@@ -199,8 +189,7 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 
 			# add actual results line
 			abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
-				lwd=2,
-        col="green")
+				lwd=2)
 		}
 
 		# predict vote share on election day
@@ -214,6 +203,9 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 	}
 }
 
+linearExtrapolateCandidate("mccain", polls2008_iowa, results2008, 0, TRUE)
+
+
 
 complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_period, plot) {
 
@@ -222,6 +214,8 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 
 	# check if there are any rows that aren't NA
 	if (all(is.na(polling_df[,cand_indx]))) {
+		print(candidate)
+		print("All observations were NA")
 		return(0)
 	} else {
 
@@ -240,8 +234,7 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
 				xlab="Days to Caucus",
 				ylab="Vote Share",
-		#		main=toupper(candidate),
-        main="Complex Linear")
+				main=candidate)
 
 			# add regression line
 			lines(x=polling_df$days_to_caucus, 
@@ -250,8 +243,7 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 
 			# add actual results line
 			abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
-				lwd=2,
-        col="green")
+				lwd=2)
 		}
 
 		# predict vote share on election day
@@ -343,6 +335,8 @@ testPollTrendsModel <- function(polling_df, results_df, model, time_period) {
 
 mse_simpleLinear <- (testPollTrendsModel(polls2008_iowa, results2008, linearExtrapolateCandidate, 0) + testPollTrendsModel(polls2012_iowa, results2012, linearExtrapolateCandidate, 0)) / 2
 
+mse_simpleLinear
+
 mse_complexLinear <- (testPollTrendsModel(polls2008_iowa, results2008, complexLinearExtrapolateCandidate, 0) + testPollTrendsModel(polls2012_iowa, results2012, complexLinearExtrapolateCandidate, 0)) / 2
 
 
@@ -361,7 +355,6 @@ chooseAverageInterval <- function(polling_df, results_df) {
 
 AVG_INTERVAL <- chooseAverageInterval(polls2008_iowa, results2008) # 4 in 2008, 3 in 2012, go with 4
 
-
 ##############
 # BUILD & TEST COMBINED MODEL OPTIONS
 ##############
@@ -373,7 +366,7 @@ predCandidates(polls2008_national, results2008, averageLatestPollingCandidate, A
 # Given polling and results dfs, construct a matrix of observations to use in regression models
 buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope, results_df) {
 
-  # construct vector of predictor names
+	# construct vector of predictor names
 	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl', 'ep_iowa', 'ep_natl', 'avg_iowa')
 
 	# build matrix of predictors
@@ -507,118 +500,18 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	# return(linear_model)
 }
 
-preds_df <- combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
+combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
-rownames(preds_df[1])[1]
-
-```
-
-# Predictions
-
-__We predict XXX to be the winner of the 2016 Iowa Republican caucus.__
-
-| Candidate | Vote Share |
-|:------|:-----|
-| Donald Trump  | 0 |
-| Ted Cruz  | 0 |
-| Marco Rubio  | 0 |
-| Jeb Bush | 0 |
-| Ben Carson | 0 |
-| Chris Christie | 0 |
-| Rand Paul | 0 |
-| Mike Huckabee | 0 |
-| John Kasich |  0 |
-
-# Methodology
-
-## Features
-
-### Iowa Polling Trends
-
-We focused our attention on in-state polling leading up to the caucus, since this has historically been the best indicator of the candidates' standing in Iowa. We used polls aggregated for Iowa by pollster.com (which was later acqured by _The Huffington Post_) for [2008](http://www.pollster.com/polls/ia/08-ia-rep-pres-primary.html) and [2012](http://elections.huffingtonpost.com/pollster/2012-iowa-gop-primary.csv). (All of the code used in this project is available at: [https://github.com/jeffbarrera/iowa-caucus/](https://github.com/jeffbarrera/iowa-caucus/) ). We wrote python scripts ([2008](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2008_data.py) ; [2012/16](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2012_2016_data.py) ) to standardize the data across years and add one key variable: the number of days before the Iowa Caucus is held.
-
-Our core challenge with this polling data was how to extrapolate a predicted vote share on caucus day from the multitude of polls conducted days or weeks earlier. To predict out a trend line to caucus day, we tested a number of approaches: linear regression, lowess regression and non-parametric regression with gaussian and epanechnekov kernels.
-
-```{r, echo=FALSE, results="hide", fig.height=3}
-
-par(mfrow=c(1,4))
-
-linearExtrapolateCandidate("romney", polls2012_iowa, results2012, time_period, TRUE)
-complexLinearExtrapolateCandidate("mccain", polls2008_iowa, results2008, time_period, TRUE)
-
-```
-_Comparison of different extrapolation techniques: model line in red, actual result in green._
-
-We wrote scripts to test several techniques under a variety of circumstances: [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv)), and first-order non-parametric regression with [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
-
-|  | Simple Linear Model | Complex Linear Model | Lowess | Gaussian | Epanechnikov |
-|------:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(mse_complexLinear, digits=2)` | 7.88 | 9.63 | 7.29 |
-
-
-TK TRENDLINE WIDTH
-
-One additional complication is that prior years' polling included results the day of the caucus; the most recent poll results we have access to are several days ahead of the caucus. Thus we had to interpolate from a point several days ahead of the caucus to a final result; we tested several approaches and found the best to be TK TK. 
-
-```{r, echo=FALSE, fig.width=7, fig.height=3}
-
-ep_mse_interp <- read.csv("ep_interp_mse_pred.csv", stringsAsFactors=FALSE)
-
-plot(x=ep_mse_interp$trendline_width,
-     y=ep_mse_interp$mse,
-     type="l",
-     xlab="Days to caucus",
-     ylab="MSE",
-     main="Choosing the period to interpolate over")
-
-```
-
-We then applied this model to generate a predicted vote share for each candidate in the 2008, 2012, and 2016 caucuses.
-
-### National Polling Trends
-In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-forecasting-the-2016-presidential-primary-election/), 538 uses national polling as a contrarian indicator, based on [data suggesting that candidates who poll better in a particular state than they do nationally tend to do better than their statewide polls](http://fivethirtyeight.com/features/to-win-in-iowa-or-new-hampshire-it-may-be-better-to-poll-worse-nationally/). We adopted a similar approach, applying the epanechnikov technique we used to estimate statewide polling trends to national polling for each candidate.
-
-### Iowa Polling Average
-In case our trend projections were placing too much weight on the direction of the polling, we also included a simple average of the vote shares for each candidate in the days leading up to the election. We tested from 2 to 21 days out from the caucus, and calculated the RMSE for each interval. The lowest RMSE was at 4 days in 2008 and 3 days in 2012, so we went with the rounded average of 4 days.
-
-## Features Not Included
-
-We considered a number of additional features, but chose not to include them for various reasons:
-
-### Campaign Finance Data
-Reports filed with the Federal Elections Commission give some insight into a candidates' fundraising and spending, but we chose to disregard these as not predictive of vote share for several reasons:
-
-- This year is different! One candidate (guess who) has been the beneficiary of millions in "earned media" &mdash; coverage that's not paid for. Because he's been so effective in winning earned media, he hasn't sought contributions in the same manner as other candidates. Thus many of the usual governing assumptions (probably) don't hold.
-
-- Candidates' reports are filed at a significant lag. Quarterly reports covering the fourth quarter of 2015 are due Jan. 31, but do not reflect any spending or fundraising that took place in 2016. Polling data is generally much more current than that.
- 
-- The 2012 and 2008 Iowa caucuses were held Jan. 2 (two days after the end of a filing period) whereas the 2016 caucuses are held Feb. 1 (a month after the end of the most recently available candidate spending data). Thus a relationship between financial figures for 2008 and 2012 wouldn't necessarily hold true for 2016. 
-
--  The way that campaigns spend money is in flux and increasingly money spent is excluded from public accounting. Increasingly spending from a candidates' principal campaign committee is overshadowed by money spent by independent expenditure only committees (aka super PACs). In 2012, super PACs primarly spent money on media buys, but increasingly these "outside" groups are taking on tasks previously handled by candidate committees, including last-minute voter targetting and mobilization. Other money spent by non-profit groups is not publically reported at all, and anecdotal reports suggest this type of spending is rising. 
-
-### Endorsements
-
-Fivethirtyeight uses a weighted endorsements system to help predict primary results. What their data show[footnote], however, is that there are far fewer endorsements this year than in previous cycles. 
+combinePredictorsIntoModel(polls2008_iowa, polls2008_national, results2008, FALSE)
+combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, FALSE)
 
 
 
-### Crosstabs available in polls
 
-Most reputable polls provide results cross-tabulated by various demographic groups. Unfortunately, we were unable to find any easily available aggregation of poll crosstabs (and the inconsistent approach pollsters take would make this a considerable challenge). Nonetheless, we believe this might be a useful indicator. Were this data available in bulk we might be able to make different assumptions about the electorate. Data suggest many potential voters who say they plan to participate in caucuses do not actually do so; we believe voter subgroups' lie to pollsters at a differential rate, introducting a meaningful bias into polls.
 
-## Model
 
-Once we had these predictors, we used a LASSO regression to determine how to weight each feature. Treating the actual vote share for each candidate in 2008 and 2012 as our training Y variable, we calculated $\beta$ coefficients for each feature at different values of $\lambda$. We then used leave-one-out cross-validation to see how each model performed out-of-sample. We selected the model with the lowest out-of-sample MSE, in the hope that this would be predictive in 2016 but would also avoid overfitting to the 2008 and 2012 data. The final coefficients in this model were:
 
-__INSERT COEFFICIENTS__
 
- We then used this model to predict vote shares for each of the 2016 candidates. Finally, since the sum of these predictions likely would not exactly equal 100%, we scaled them proportionally to produce our estimates of vote share.
 
-## Limitations & Opportunities for Improvement
 
-The biggest limitation of our model is that it does not include any features intended to measure voter turnout or the "ground game" &mdash; the campaigns' efforts to identify supporters and get them to show up to caucus. Historically, this has been a critical aspect of winning in Iowa: since caucuses typically have [low turnout rates](http://iowacaucusproject.org/2015/07/how-many-people-participate-in-the-iowa-caucuses/), effectively mobilizing supporters can have a big impact on a candidate's vote share. However, we were unable to find a good way to measure organizing operations or predict turnout, since we couldn't obtain useful campaign finance or cross-tabular data.
-
-Ultimately, we had to rely on assumptions about the relationship between polling and turnout. All the polls we're aggregating are of "likely voters," and some of the the polling firms also weight their responses based on estimated turnout models. We thus hope that the relationship between these polls of likely voters and the final vote share is reasonably consistent across elections, and that the coefficients in our LASSO model will capture this relationship.
-
-If this relationship is not consistent, however (perhaps because supporters of "outsider" candidates like Trump may be more likely to lie to pollsters about whether they will caucus), this could throw off our model. Given more time and detailed cross-tabulated data, it may be possible to explore and account for these differences, and produce more nuanced models of the relationship between a candidate's poll numbers, turnout rates, and actual vote share. This could be an interesting avenue to explore in the future.

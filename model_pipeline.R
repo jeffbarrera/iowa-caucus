@@ -353,10 +353,12 @@ buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope
 	# add polling model predictions
 	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	# preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,3] <- 0
 	preds[,4] <- predCandidates(c(year, scope), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,5] <- predCandidates(c(year, "national"), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	preds[,6] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
+	# preds[,6] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
+	preds[,6] <- 0
 
 
 
@@ -430,6 +432,7 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	# build matrix to predict 2016
 	preds_2016 <- buildPredictionMatrix(polls2016_iowa, polls2016_national, "2016", "iowa", candidates_2016)
 
+	print(preds_2016)
 
 
 	########### BUILD MODELS ###########
@@ -438,6 +441,7 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	linear_model <- lm(results_train$percentage ~ ., data=as.data.frame(preds_train))
 	print("############## LINEAR ##############")
 	print(summary(linear_model))
+	print(predict(linear_model, newdata = as.data.frame(preds_2016)))
 
 	# run LASSO on predictors
 	lasso <- glmnet(x = preds_train, y = results_train$percentage)
@@ -469,12 +473,17 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	return(df_preds_2016)
 
 	# return(lasso)
+
+	# return(linear_model)
 }
+
 
 combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
 combinePredictorsIntoModel(polls2008_iowa, polls2008_national, results2008, FALSE)
 combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, FALSE)
+
+
 
 
 
