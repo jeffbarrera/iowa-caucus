@@ -109,14 +109,16 @@ results2012 <- cleanResults(results2012)
 loadMergeEpanechnikov <- function() {
 
 	# load CSVs
-	ep_2008_2012_iowa <- read.csv("ep_interp_log_pred.csv", stringsAsFactors=FALSE)
+  ep_2008_iowa <- read.csv("2008_predictions_iowa.csv", stringsAsFactors=FALSE)
+  ep_2012_iowa <- read.csv("2012_predictions_iowa.csv", stringsAsFactors=FALSE)
+  ep_2016_iowa <- read.csv("2016_predictions_iowa.csv", stringsAsFactors=FALSE)
+  
 	ep_2008_natl <- read.csv("2008_predictions_national.csv", stringsAsFactors=FALSE)
 	ep_2012_natl <- read.csv("2012_predictions_national.csv", stringsAsFactors=FALSE)
-	ep_2016_iowa <- read.csv("2016_predictions.csv", stringsAsFactors=FALSE)
 	ep_2016_natl <- read.csv("2016_predictions_national.csv", stringsAsFactors=FALSE)
 
 	# put all into a list
-	ep_dfs <- list(ep_2008_2012_iowa, ep_2016_iowa, ep_2008_natl, ep_2012_natl, ep_2016_natl)
+	ep_dfs <- list(ep_2008_iowa, ep_2012_iowa, ep_2016_iowa, ep_2008_natl, ep_2012_natl, ep_2016_natl)
 
 	# strip out unneeded columns to allow table merging
 	ep_dfs_sub <- lapply(ep_dfs, subset, select=c(window_type, bw_value, year, scope, trendline_width, candidate, estimate))
@@ -572,7 +574,7 @@ _Comparison of different extrapolation techniques applied to Mitt Romney in 2012
 
 Testing scripts are here for [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv));  [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
 
-Arguably running this test naively--that is, just testing it on 2008 and 2012 without any cross-validation--could lead to a type of overfitting, but we'd expect the size of improvement to be minimal. We [noticed](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse_cycle.csv) that MSE was minimized for the 2008 and 2012 cycle with a bandwith of 13 and 14 days respectively, which suggests there are similar dynamics (despite the races being vary different).
+Arguably running this test naively--that is, just testing it on 2008 and 2012 without any cross-validation--could lead to a type of overfitting, but we'd expect the size of improvement to be minimal. We [noticed](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse_cycle.csv) that MSE was minimized for the 2008 and 2012 cycle with a bandwith of 13 and 14 days respectively, which suggests there are similar dynamics (despite the races being very different).
 
 ```{r, include=FALSE}
 
@@ -592,7 +594,7 @@ ep_min_mse <- min(ep_mse_df$mse)
 |------:|:-----:|:-----:|:-----:|:-----:|:-----:|
 | Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(lowess_min_mse, digits=2)` | `r round(gaussian_min_mse, digits=2)` | `r round(ep_min_mse, digits=2)` |
 
-To answer the second half of the problem &mdash; how to interpolate from a polling average several days ahead of the caucus to a final vote share on caucus day &mdash; we assumed it would be best to start with the best polling average result. We tested a number of possible measures of the 'momentum' by drawing a line from the final average poll result and the result from several days earlier. Our testing suggested 14 days worked best. Again, this wasn't cross-validated in any way, but it sounds good &mdash; that's the last point outside of the epanechnikov window. We also assume that interpolation error isn't huge (Santorum 2012 aside).
+To answer the second half of the problem &mdash; how to interpolate from a polling average several days ahead of the caucus to a final vote share on caucus day &mdash; we assumed it would be best to start with the best polling average result. We tested a number of possible measures of the 'momentum' by drawing a line from the final average poll result and the result from several days earlier. Our testing suggested 2 days worked best (the drop at 14 days appears to be a fluke).
 
 ```{r, echo=FALSE, fig.width=7, fig.height=3}
 
