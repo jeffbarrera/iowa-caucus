@@ -499,18 +499,24 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 
 	# scale and sort results
 	df_preds_2016 <- scaleSortResults(lasso_preds)
+  
+  ## list of things to return
+  return_list <- list(df_preds_2016, lasso, lasso_cv)
 
-	return(df_preds_2016)
+	# return(df_preds_2016)
+  
+  return(return_list)
 
 	# return(lasso)
 
 	# return(linear_model)
 }
 
-preds_df <- combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
+model_info <- combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
-
-rownames(preds_df[1])[1]
+df_preds_2016 <- model_info[[1]]
+lasso <- model_info[[2]]
+lasso_cv <- model_info[[3]]
 
 ```
 
@@ -532,11 +538,9 @@ __We predict XXX to be the winner of the 2016 Iowa Republican caucus.__
 
 # Methodology
 
-## Features
+## Key Feature: Iowa Polling Trends
 
-### Iowa Polling Trends
-
-We focused our attention on in-state polling leading up to the caucus, since this has historically been the best indicator of the candidates' standing in Iowa. We used polls aggregated for Iowa by pollster.com (which was later acqured by _The Huffington Post_) for [2008](http://www.pollster.com/polls/ia/08-ia-rep-pres-primary.html) and [2012](http://elections.huffingtonpost.com/pollster/2012-iowa-gop-primary.csv). (All of the code used in this project is available at: [https://github.com/jeffbarrera/iowa-caucus/](https://github.com/jeffbarrera/iowa-caucus/) ). We wrote python scripts ([2008](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2008_data.py) ; [2012/16](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2012_2016_data.py) ) to standardize the data across years and add one key variable: the number of days before the Iowa Caucus is held.
+We focused our attention on in-state polling leading up to the caucus, since this has historically been the best indicator of a candidates' standing in Iowa. We used polls aggregated for Iowa by pollster.com (which was later acqured by _The Huffington Post_) for [2008](http://www.pollster.com/polls/ia/08-ia-rep-pres-primary.html) and [2012](http://elections.huffingtonpost.com/pollster/2012-iowa-gop-primary.csv). (All of the code used in this project is available at: [https://github.com/jeffbarrera/iowa-caucus/](https://github.com/jeffbarrera/iowa-caucus/) ). We wrote python scripts ([2008](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2008_data.py) ; [2012/16](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2012_2016_data.py) ) to standardize the data across years and add one key variable: the number of days before the Iowa Caucus is held.
 
 Our core challenge with this polling data was how to extrapolate a predicted vote share on caucus day from the multitude of polls conducted days or weeks earlier. To predict out a trend line to caucus day, we tested a number of approaches: linear regression, lowess regression and non-parametric regression with gaussian and epanechnekov kernels.
 
@@ -547,14 +551,31 @@ par(mfrow=c(1,4))
 linearExtrapolateCandidate("romney", polls2012_iowa, results2012, time_period, TRUE)
 complexLinearExtrapolateCandidate("mccain", polls2008_iowa, results2008, time_period, TRUE)
 
+
+
 ```
-_Comparison of different extrapolation techniques: model line in red, actual result in green._
+
+_Comparison of different extrapolation techniques: model line in red, actual vote share in green._
 
 We wrote scripts to test several techniques under a variety of circumstances: [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv)), and first-order non-parametric regression with [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
 
+```{r, include=FALSE}
+
+# load mse datasets to build table below
+lowess_mse_df <- read.csv("lowesslog_mse.csv")
+gaussian_mse_df <- read.csv("kplog_mse.csv")
+ep_mse_df <- read.csv("eplog_mse.csv")
+
+# find min values
+lowess_min_mse <- min(lowess_mse_df$mse)
+gaussian_min_mse <- min(gaussian_mse_df$mse)
+ep_min_mse <- min(ep_mse_df$mse)
+
+```
+
 |  | Simple Linear Model | Complex Linear Model | Lowess | Gaussian | Epanechnikov |
 |------:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(mse_complexLinear, digits=2)` | 7.88 | 9.63 | 7.29 |
+| Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(mse_complexLinear, digits=2)` | `r round(lowess_min_mse, digits=2)` | `r round(gaussian_min_mse, digits=2)` | `r round(ep_min_mse, digits=2)` |
 
 
 TK TRENDLINE WIDTH
@@ -598,26 +619,32 @@ Reports filed with the Federal Elections Commission give some insight into a can
 -  The way that campaigns spend money is in flux and increasingly money spent is excluded from public accounting. Increasingly spending from a candidates' principal campaign committee is overshadowed by money spent by independent expenditure only committees (aka super PACs). In 2012, super PACs primarly spent money on media buys, but increasingly these "outside" groups are taking on tasks previously handled by candidate committees, including last-minute voter targetting and mobilization. Other money spent by non-profit groups is not publically reported at all, and anecdotal reports suggest this type of spending is rising. 
 
 ### Endorsements
-
 Fivethirtyeight uses a weighted endorsements system to help predict primary results. What their data show[footnote], however, is that there are far fewer endorsements this year than in previous cycles. 
 
-
-
 ### Crosstabs available in polls
-
 Most reputable polls provide results cross-tabulated by various demographic groups. Unfortunately, we were unable to find any easily available aggregation of poll crosstabs (and the inconsistent approach pollsters take would make this a considerable challenge). Nonetheless, we believe this might be a useful indicator. Were this data available in bulk we might be able to make different assumptions about the electorate. Data suggest many potential voters who say they plan to participate in caucuses do not actually do so; we believe voter subgroups' lie to pollsters at a differential rate, introducting a meaningful bias into polls.
 
 ## Model
 
 Once we had these predictors, we used a LASSO regression to determine how to weight each feature. Treating the actual vote share for each candidate in 2008 and 2012 as our training Y variable, we calculated $\beta$ coefficients for each feature at different values of $\lambda$. We then used leave-one-out cross-validation to see how each model performed out-of-sample. We selected the model with the lowest out-of-sample MSE, in the hope that this would be predictive in 2016 but would also avoid overfitting to the 2008 and 2012 data. The final coefficients in this model were:
 
-__INSERT COEFFICIENTS__
+```{r fig.align='right', echo=FALSE}
+
+library(knitr)
+
+# extract coefficients from LASSO
+lasso_lowestMSE_index <- which(lasso$lambda == lasso_cv$lambda.min)
+round(lasso$beta[,lasso_lowestMSE_index], digits=2)
+
+# kable(lasso$beta[,lasso_lowestMSE_index])
+
+```
 
  We then used this model to predict vote shares for each of the 2016 candidates. Finally, since the sum of these predictions likely would not exactly equal 100%, we scaled them proportionally to produce our estimates of vote share.
 
 ## Limitations & Opportunities for Improvement
 
-The biggest limitation of our model is that it does not include any features intended to measure voter turnout or the "ground game" &mdash; the campaigns' efforts to identify supporters and get them to show up to caucus. Historically, this has been a critical aspect of winning in Iowa: since caucuses typically have [low turnout rates](http://iowacaucusproject.org/2015/07/how-many-people-participate-in-the-iowa-caucuses/), effectively mobilizing supporters can have a big impact on a candidate's vote share. However, we were unable to find a good way to measure organizing operations or predict turnout, since we couldn't obtain useful campaign finance or cross-tabular data.
+The biggest limitation of our model is that it does not include any features intended to measure voter turnout or the "ground game" &mdash; the campaigns' efforts to identify supporters and get them to show up to caucus. Historically, this has been a critical aspect of winning in Iowa: since caucuses typically have [low turnout rates](http://iowacaucusproject.org/2015/07/how-many-people-participate-in-the-iowa-caucuses/), effectively mobilizing supporters can have a big impact on a candidate's vote share. However, we were unable to find a good way to measure organizing operations or predict turnout, since we couldn't obtain useful campaign finance or crosstab data.
 
 Ultimately, we had to rely on assumptions about the relationship between polling and turnout. All the polls we're aggregating are of "likely voters," and some of the the polling firms also weight their responses based on estimated turnout models. We thus hope that the relationship between these polls of likely voters and the final vote share is reasonably consistent across elections, and that the coefficients in our LASSO model will capture this relationship.
 

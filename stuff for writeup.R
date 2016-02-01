@@ -3,6 +3,7 @@
 ##############
 library(glmnet)
 library(Metrics)
+library(lpridge)
 
 
 
@@ -275,6 +276,83 @@ epanechnikovExtrapolateCandidate <- function(candidate_name, year_scope, results
 }
 
 # epanechnikovExtrapolateCandidate("mccain", c("2008", "national"), results2008, FALSE)
+
+
+##### OTHER Approaches
+
+
+
+plotExtrapolateCandidate <- function(candidate, polling_df, results_df, time_period, plot) {
+
+	# find col index for that candidate's name
+	cand_indx <- which(colnames(polling_df) == candidate)
+
+	# check if there are any rows that aren't NA
+	if (all(is.na(polling_df[,cand_indx]))) {
+		print(candidate)
+		print("All observations were NA")
+		return(0)
+	} else {
+
+		if(plot == TRUE) {
+
+			# print model
+			# print(summary(lm_model))
+
+			# plot data
+			plot(x=polling_df$days_to_caucus,
+				y=polling_df[,cand_indx],
+				col="grey",
+				# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
+				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
+				xlab="Days to Caucus",
+				ylab="Vote Share",
+				main=toupper(candidate))
+
+			# simple linear model
+			lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus, data=polling_df)
+
+			# add simple regression line
+			abline(lm_model,
+				col="red",
+				lwd="2")
+
+			# add complex regression line
+			lm_model_complex <- lm(polling_df[,cand_indx] ~ days_to_caucus + I(days_to_caucus^2) + I(days_to_caucus^3), data=polling_df)
+			
+			# lines(x=polling_df$days_to_caucus, 
+				  # y=predict(lm_model_complex), type='l', col="orange", lwd=2)
+
+
+			# add lowess regression line
+			cand_lowess = lowess(polling_df$days_to_caucus, polling_df[,cand_indx], f=.2)
+			lines(cand_lowess, 
+				col="blue",
+				lwd="2")
+
+			# add gaussian line
+			gaussian_smooth = ksmooth(polling_df$days_to_caucus, polling_df[,cand_indx], "normal", bandwidth = 4)
+			lines(gaussian_smooth,  col="orange", lwd=2)
+
+			# add ep line
+			cand_epan <- lpepa(polling_df$days_to_caucus, polling_df[,cand_indx], bandw=13, order=2, n.out=1000)
+			lines(cand_epan$x.out, cand_epan$est,  col="purple")
+
+
+			# add actual results line
+			abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
+				lwd=2,
+				col="green")
+		}
+	}
+}
+
+plotExtrapolateCandidate("romney", polls2008_iowa, results2008, 0, TRUE)
+
+
+
+
+
 
 # predCandidates
 # --------------

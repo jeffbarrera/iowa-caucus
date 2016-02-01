@@ -145,7 +145,7 @@ averageLatestPollingCandidate <- function(candidate, polling_df, results_df, tim
 	}
 }
 
-averageLatestPollingCandidate("mccain", polls2008_national, results2008, 20)
+averageLatestPollingCandidate("romney", polls2008_national, results2008, 12)
 
 #### LINEAR MODELS
 
@@ -202,6 +202,7 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 		return(pred_vote_share)
 	}
 }
+
 
 
 
@@ -336,7 +337,6 @@ AVG_INTERVAL <- chooseAverageInterval(polls2008_iowa, results2008) # 4 in 2008, 
 # BUILD & TEST COMBINED MODEL OPTIONS
 ##############
 
-predCandidates(polls2008_national, results2008, averageLatestPollingCandidate, AVG_INTERVAL)
 
 # buildPredictionMatrix
 # ---------------------
@@ -353,12 +353,12 @@ buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope
 	# add polling model predictions
 	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	# preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,3] <- 0
 	preds[,4] <- predCandidates(c(year, scope), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,5] <- predCandidates(c(year, "national"), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	# preds[,6] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
-	preds[,6] <- 0
+	preds[,6] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
+	# preds[,6] <- 0
 
 
 
@@ -485,10 +485,13 @@ combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, FALS
 
 
 
+##################
+
+length(unique(polls2016_national$pollster))
 
 
 
 
-
+# LM 1 national - may not be appropriate since trump much more popular nationally than cruz
 
 
