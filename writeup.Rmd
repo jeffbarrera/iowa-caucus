@@ -592,7 +592,7 @@ ep_min_mse <- min(ep_mse_df$mse)
 |------:|:-----:|:-----:|:-----:|:-----:|:-----:|
 | Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(lowess_min_mse, digits=2)` | `r round(gaussian_min_mse, digits=2)` | `r round(ep_min_mse, digits=2)` |
 
-To answer the second half of the problem--how to interpolate from a polling average several days ahead of the caucus to a final vote share on caucus day, we assumed it would be best to start with the best polling average result. We tested a number of possible measures of the 'momentum' by drawing a line from the final average poll result and the result from several days earlier. Our testing suggested 14 days worked best. Again, this wasn't cross-validated in any way, but it sounds good--that's the last point outside of the epanechnikov window. We also assume that interpolation error isn't huge (Santorum 2012 aside).
+To answer the second half of the problem &mdash; how to interpolate from a polling average several days ahead of the caucus to a final vote share on caucus day &mdash; we assumed it would be best to start with the best polling average result. We tested a number of possible measures of the 'momentum' by drawing a line from the final average poll result and the result from several days earlier. Our testing suggested 14 days worked best. Again, this wasn't cross-validated in any way, but it sounds good &mdash; that's the last point outside of the epanechnikov window. We also assume that interpolation error isn't huge (Santorum 2012 aside).
 
 ```{r, echo=FALSE, fig.width=7, fig.height=3}
 
@@ -615,8 +615,6 @@ In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-for
 In case our interpolated projections were worse than the unimproved polling average several days out, we also included as a feature the vote shares for each candidate in the days leading up to the election. We tested from 2 to 21 days out from the caucus, and calculated the RMSE for each interval. The lowest RMSE was at 4 days in 2008 and 3 days in 2012, so we went with the rounded average of 4 days.
 
 ## Features Not Included
-
-We considered a number of additional features, but chose not to include them for various reasons:
 
 ### Campaign Finance Data
 Reports filed with the Federal Elections Commission give some insight into a candidates' fundraising and spending, but we didn't make analysis of those a priority  for several reasons:
