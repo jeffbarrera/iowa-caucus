@@ -8,7 +8,7 @@ output:
 geometry: margin=1in
 ---
 
-```{r, echo=FALSE, message=FALSE, include=TRUE}
+```{r, echo=FALSE, message=FALSE, include=FALSE}
 
 
 ##############
@@ -139,8 +139,6 @@ ep_preds <- loadMergeEpanechnikov()
 # PREDICT POLL TRENDS
 ##############
 
-#### SIMPLE AVERAGES
-
 # averageLatestPollingCandidate
 # --------------------------
 # Given a candidate, polling_df, results_df, and time period, calculate a simple average of the vote shares
@@ -159,8 +157,6 @@ averageLatestPollingCandidate <- function(candidate, polling_df, results_df, tim
 		return(poll_mean)
 	}
 }
-
-#### LINEAR MODELS
 
 # linearExtrapolateCandidate
 # --------------------------
@@ -218,59 +214,6 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 }
 
 
-complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_period, plot) {
-
-	# find col index for that candidate's name
-	cand_indx <- which(colnames(polling_df) == candidate)
-  
-  # subset df to last 21 days, ignore last 2 days (no 2016 polling available)
-  polling_df <- subset(polling_df, days_to_caucus < 21 & days_to_caucus > 0)
-
-	# check if there are any rows that aren't NA
-	if (all(is.na(polling_df[,cand_indx]))) {
-		return(0)
-	} else {
-
-		# simple linear model
-		lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus + I(days_to_caucus^2) + I(days_to_caucus^3), data=polling_df)
-
-		if(plot == TRUE) {
-
-			# print model
-			# print(summary(lm_model))
-
-			# plot data
-			plot(x=polling_df$days_to_caucus,
-				y=polling_df[,cand_indx],
-				# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
-				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
-				xlab="Days to Caucus",
-				ylab="Vote Share",
-		#		main=toupper(candidate),
-        main="Complex Linear")
-
-			# add regression line
-			lines(x=polling_df$days_to_caucus, 
-				  y=predict(lm_model), type='l', col="red", lwd=2)
-
-
-			# add actual results line
-			abline(h=results_df[results_df$candidate==candidate, VOTE_SHARE_COL],
-				lwd=2,
-        col="green")
-		}
-
-		# predict vote share on election day
-		election_day_df <- data.frame(c(candidate),c("0"))
-		colnames(election_day_df) <- c("candidate", "days_to_caucus")
-		election_day_df$days_to_caucus <- as.numeric(as.character(election_day_df$days_to_caucus))
-
-		pred_vote_share <- predict(lm_model, newdata=election_day_df)
-		
-		return(pred_vote_share)
-	}
-}
-
 
 #### EPANECHNIKOV
 
@@ -288,7 +231,6 @@ epanechnikovExtrapolateCandidate <- function(candidate_name, year_scope, results
 	return(pred_vote_share[1,1])
 }
 
-# epanechnikovExtrapolateCandidate("mccain", c("2008", "national"), results2008, FALSE)
 
 # predCandidates
 # --------------
@@ -349,7 +291,7 @@ testPollTrendsModel <- function(polling_df, results_df, model, time_period) {
 
 mse_simpleLinear <- (testPollTrendsModel(polls2008_iowa, results2008, linearExtrapolateCandidate, 0) + testPollTrendsModel(polls2012_iowa, results2012, linearExtrapolateCandidate, 0)) / 2
 
-mse_complexLinear <- (testPollTrendsModel(polls2008_iowa, results2008, complexLinearExtrapolateCandidate, 0) + testPollTrendsModel(polls2012_iowa, results2012, complexLinearExtrapolateCandidate, 0)) / 2
+# mse_complexLinear <- (testPollTrendsModel(polls2008_iowa, results2008, complexLinearExtrapolateCandidate, 0) + testPollTrendsModel(polls2012_iowa, results2012, complexLinearExtrapolateCandidate, 0)) / 2
 
 
 ## see what time period produces the lowest MSE for simple polling averages
@@ -389,11 +331,9 @@ buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope
 	# add polling model predictions
 	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,2] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	#preds[,2] <- 0 # ultimately didn't use linear national vote share
 	preds[,3] <- predCandidates(c(year, scope), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,4] <- predCandidates(c(year, "national"), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
 	preds[,5] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
-	# preds[,5] <- 0
 
 
 	# add predictor names to matrix
@@ -522,25 +462,27 @@ df_preds_2016 <- model_info[[1]]
 lasso <- model_info[[2]]
 lasso_cv <- model_info[[3]]
 
-print(df_preds_2016)
+# build df to use below
+df_preds_2016$candidate <- rownames(df_preds_2016)
+round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='trump'], digits=2)
 
 ```
 
 # Predictions
 
-__We predict XXX to be the winner of the 2016 Iowa Republican caucus.__
+__We predict Donald Trump to be the winner of the 2016 Iowa Republican caucus.__
 
 | Candidate | Vote Share |
 |:------|:-----|
-| Donald Trump  | 0 |
-| Ted Cruz  | 0 |
-| Marco Rubio  | 0 |
-| Jeb Bush | 0 |
-| Ben Carson | 0 |
-| Chris Christie | 0 |
-| Rand Paul | 0 |
-| Mike Huckabee | 0 |
-| John Kasich |  0 |
+| Donald Trump  | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='trump'], digits=1)`%  |
+| Ted Cruz  | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='cruz'], digits=1)`% |
+| Marco Rubio  | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='rubio'], digits=1)`% |
+| Jeb Bush | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='bush'], digits=1)`% |
+| Ben Carson | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='carson'], digits=1)`% |
+| Chris Christie | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='christie'], digits=1)`% |
+| Rand Paul | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='paul'], digits=1)`% |
+| Mike Huckabee | `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='huckabee'], digits=1)`% |
+| John Kasich |  `r round(df_preds_2016$sorted_preds[df_preds_2016$candidate=='kasich'], digits=1)`% |
 
 # Methodology
 
@@ -581,8 +523,7 @@ plotExtrapolateCandidate <- function(candidate, polling_df, results_df, time_per
 				# ylim=c(0, results_df[results_df$Candidate==candidate, VOTE_SHARE_COL] + 10),
 				xlim=c(max(na.omit(polling_df$days_to_caucus)), min(na.omit(polling_df$days_to_caucus))),
 				xlab="Days to Caucus",
-				ylab="Vote Share",
-				main="Trendline Comparison")
+				ylab="Vote Share")
 
 			# simple linear model
 			lm_model <- lm(polling_df[,cand_indx] ~ days_to_caucus, data=polling_df)
@@ -627,7 +568,7 @@ plotExtrapolateCandidate("romney", polls2008_iowa, results2008, 0, TRUE)
 
 ```
 
-_Comparison of different extrapolation techniques applied to Mitt Romney in 2012: actual vote share in black, simple linear regression in red, lowess in blue, gaussian in orange, and epanechnekov in purple._
+_Comparison of different extrapolation techniques applied to Mitt Romney in 2012: actual vote share in black, linear regression in red, lowess in blue, gaussian in orange, and epanechnekov in purple._
 
 Testing scripts are here for [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv));  [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
 
@@ -647,9 +588,9 @@ ep_min_mse <- min(ep_mse_df$mse)
 
 ```
 
-|  | Simple Linear Model | Complex Linear Model | Lowess | Gaussian | Epanechnikov |
+|  | Linear Model | Lowess | Gaussian | Epanechnikov |
 |------:|:-----:|:-----:|:-----:|:-----:|:-----:|
-| Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(mse_complexLinear, digits=2)` | `r round(lowess_min_mse, digits=2)` | `r round(gaussian_min_mse, digits=2)` | `r round(ep_min_mse, digits=2)` |
+| Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(lowess_min_mse, digits=2)` | `r round(gaussian_min_mse, digits=2)` | `r round(ep_min_mse, digits=2)` |
 
 To answer the second half of the problem--how to interpolate from a polling average several days ahead of the caucus to a final vote share on caucus day, we assumed it would be best to start with the best polling average result. We tested a number of possible measures of the 'momentum' by drawing a line from the final average poll result and the result from several days earlier. Our testing suggested 14 days worked best. Again, this wasn't cross-validated in any way, but it sounds good--that's the last point outside of the epanechnikov window. We also assume that interpolation error isn't huge (Santorum 2012 aside).
 
@@ -661,15 +602,14 @@ plot(x=ep_mse_interp$trendline_width,
      y=ep_mse_interp$mse,
      type="l",
      xlab="Days to caucus",
-     ylab="MSE",
-     main="Choosing the period to interpolate over")
+     ylab="MSE")
 
 ```
 
 We then applied this model to generate a predicted vote share for each candidate in the 2008, 2012, and 2016 caucuses.
 
 ### National Polling Trends
-In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-forecasting-the-2016-presidential-primary-election/), 538 uses national polling as a contrarian indicator, based on [data suggesting that candidates who poll better in a particular state than they do nationally tend to do better than their statewide polls](http://fivethirtyeight.com/features/to-win-in-iowa-or-new-hampshire-it-may-be-better-to-poll-worse-nationally/). We tried a similar approach, applying the epanechnikov technique we used to estimate statewide polling trends to national polling for each candidate. 
+In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-forecasting-the-2016-presidential-primary-election/), 538 uses national polling as a contrarian indicator, based on [data suggesting that candidates who poll better in a particular state than they do nationally tend to do better than their statewide polls](http://fivethirtyeight.com/features/to-win-in-iowa-or-new-hampshire-it-may-be-better-to-poll-worse-nationally/). We adopted a similar approach, applying the linear and epanechnikov techniques we used to estimate statewide polling trends to national polling for each candidate. 
 
 ### Iowa Polling Average
 In case our interpolated projections were worse than the unimproved polling average several days out, we also included as a feature the vote shares for each candidate in the days leading up to the election. We tested from 2 to 21 days out from the caucus, and calculated the RMSE for each interval. The lowest RMSE was at 4 days in 2008 and 3 days in 2012, so we went with the rounded average of 4 days.
@@ -697,7 +637,9 @@ Most reputable polls provide results cross-tabulated by various demographic grou
 
 ## Model
 
-Once we had these predictors, we used a LASSO regression to determine how to weight each feature. Treating the actual vote share for each candidate in 2008 and 2012 as our training Y variable, we calculated $\beta$ coefficients for each feature at different values of $\lambda$. We then used leave-one-out cross-validation to see how each model performed out-of-sample. We selected the model with the lowest out-of-sample MSE, in the hope that this would be predictive in 2016 but would also avoid overfitting to the 2008 and 2012 data. Ultimately, this approach led us to use a single predictor: .94 times the epanechnikov trendline estimate for election day.
+Once we had these predictors, we used a LASSO regression to determine how to weight each feature. Treating the actual vote share for each candidate in 2008 and 2012 as our training Y variable, we calculated $\beta$ coefficients for each feature at different values of $\lambda$. We then used leave-one-out cross-validation to see how each model performed out-of-sample. We selected the model with the lowest out-of-sample MSE, in the hope that this would be predictive in 2016 but would also avoid overfitting to the 2008 and 2012 data.
+
+Our final model used these coefficients:
 
 ```{r fig.align='right', echo=FALSE}
 
@@ -705,7 +647,7 @@ library(knitr)
 
 # extract coefficients from LASSO
 lasso_lowestMSE_index <- which(lasso$lambda == lasso_cv$lambda.min)
-# round(lasso$beta[,lasso_lowestMSE_index], digits=2)
+round(lasso$beta[,lasso_lowestMSE_index], digits=2)
 
 # kable(lasso$beta[,lasso_lowestMSE_index])
 
