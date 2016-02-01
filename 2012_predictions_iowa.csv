@@ -1,0 +1,7 @@
+window_type,bw_value,year,scope,trendline_width,candidate,pre_interpolation,estimate
+epanechnikov,13,2012,iowa,2,Romney,22.9621888921,23.8193861986
+epanechnikov,13,2012,iowa,2,Gingrich,13.017001326,11.6450277921
+epanechnikov,13,2012,iowa,2,Santorum,18.0495465906,20.8117231855
+epanechnikov,13,2012,iowa,2,Paul,19.5528066166,19.0077021681
+epanechnikov,13,2012,iowa,2,Huntsman,2.84253493758,2.69430880585
+epanechnikov,13,2012,iowa,2,Perry,10.6566477644,10.570015777
