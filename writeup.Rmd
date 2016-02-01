@@ -28,7 +28,8 @@ EP_BW <- 13 # found by testing MSE at different bandwidths in 2008 & 2012
 EP_TRENDLINE <- 14 # found by testing MSE at bandwidth 13 and different trendlines in 2008 & 2012
 
 # Jeff's working directory -- comment out and override
-setwd("~//Documents/School/Stanford/Classes/Poli Sci 355B/Challenge 1/iowa-caucus")
+#setwd("~//Documents/School/Stanford/Classes/Poli Sci 355B/Challenge 1/iowa-caucus")
+setwd("/Users/jfenton/github-whitelabel/polisci_355b/iowa-caucus")
 
 
 ##############
