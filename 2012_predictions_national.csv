@@ -1,0 +1,7 @@
+window_type,bw_value,year,scope,trendline_width,candidate,pre_interpolation,estimate
+epanechnikov,13,2012,national,14,Romney,23.81353092984398,24.990563684023357
+epanechnikov,13,2012,national,14,Gingrich,24.82745215861953,19.522251341119016
+epanechnikov,13,2012,national,14,Santorum,3.1549347871992155,2.6862777603024806
+epanechnikov,13,2012,national,14,Paul,12.31576799180287,14.16368122712838
+epanechnikov,13,2012,national,14,Huntsman,2.0817870419054083,1.7165967532598922
+epanechnikov,13,2012,national,14,Perry,6.700028202428243,6.809331503988599

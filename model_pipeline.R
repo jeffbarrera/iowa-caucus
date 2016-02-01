@@ -11,7 +11,8 @@ library(Metrics)
 ##############
 FIRST_POLLING_COL <- 12
 VOTE_SHARE_COL <- 3
-
+EP_BW <- 13 # found by testing MSE at different bandwidths in 2008 & 2012
+EP_TRENDLINE <- 14 # found by testing MSE at bandwidth 13 and different trendlines in 2008 & 2012
 
 # Jeff's working directory -- comment out and override
 setwd("~//Documents/School/Stanford/Classes/Poli Sci 355B/Challenge 1/iowa-caucus")
@@ -85,28 +86,36 @@ results2008 <- cleanResults(results2008)
 results2012 <- cleanResults(results2012)
 
 
-# load epanechnikov results
-eplog <- read.csv("eplog.csv", stringsAsFactors=FALSE)
-eplog_mse <- read.csv("eplog_mse.csv", stringsAsFactors=FALSE)
 
-# clean up candidate column
-eplog$candidate <- tolower(eplog$candidate)
+# loadMergeEpanechnikov
+# ---------------------
+# read, clean, and concat Epanechnikov predictions.
+# return combined ep preds.
+loadMergeEpanechnikov <- function() {
 
+	# load CSVs
+	ep_2008_2012_iowa <- read.csv("ep_interp_log_pred.csv", stringsAsFactors=FALSE)
+	ep_2008_natl <- read.csv("2008_predictions_national.csv", stringsAsFactors=FALSE)
+	ep_2012_natl <- read.csv("2012_predictions_national.csv", stringsAsFactors=FALSE)
+	ep_2016_iowa <- read.csv("2016_predictions.csv", stringsAsFactors=FALSE)
+	ep_2016_natl <- read.csv("2016_predictions_national.csv", stringsAsFactors=FALSE)
 
-# weightPollingBy538Rankings
-# --------------------------
-# Given a df of polling data and a df (or some other object) of 538's pollster rankings, duplicate polling observations to weight by 538's rankings.
-# Return a df with weighted polling data
+	# put all into a list
+	ep_dfs <- list(ep_2008_2012_iowa, ep_2016_iowa, ep_2008_natl, ep_2012_natl, ep_2016_natl)
 
+	# strip out unneeded columns to allow table merging
+	ep_dfs_sub <- lapply(ep_dfs, subset, select=c(window_type, bw_value, year, scope, trendline_width, candidate, estimate))
 
+	# merge all tables
+	ep_preds <- do.call(rbind, ep_dfs_sub)
 
+	# clean up candidate column
+	ep_preds$candidate <- tolower(ep_preds$candidate)
 
+	return(ep_preds)
+}
 
-
-
-
-
-
+ep_preds <- loadMergeEpanechnikov()
 
 
 
@@ -115,6 +124,29 @@ eplog$candidate <- tolower(eplog$candidate)
 # PREDICT POLL TRENDS
 ##############
 
+#### SIMPLE AVERAGES
+
+# averageLatestPollingCandidate
+# --------------------------
+# Given a candidate, polling_df, results_df, and time period, calculate a simple average of the vote shares
+averageLatestPollingCandidate <- function(candidate, polling_df, results_df, time_period, plot) {
+
+	# hack == return zero if bachmann
+	if(candidate == "bachmann") {
+		return(0)
+	} else {
+
+		# subset polling_df to the specificed candidate and time period
+		polls <- subset(polling_df, days_to_caucus < time_period & days_to_caucus > 1, select=candidate)
+		poll_mean <- mean(polls[,1])
+		poll_sd <- sd(polls[,1])
+
+		return(poll_mean)
+	}
+}
+
+averageLatestPollingCandidate("mccain", polls2008_national, results2008, 20)
+
 #### LINEAR MODELS
 
 # linearExtrapolateCandidate
@@ -122,7 +154,7 @@ eplog$candidate <- tolower(eplog$candidate)
 # Given a candidate, polling_df, and results_df, generate a simple linear model regressing vote shares over time
 # return predicted vote share on election day
 
-linearExtrapolateCandidate <- function(candidate, polling_df, results_df, plot) {
+linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_period, plot) {
 
 	# find col index for that candidate's name
 	cand_indx <- which(colnames(polling_df) == candidate)
@@ -173,7 +205,7 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, plot) 
 
 
 
-complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df, plot) {
+complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_period, plot) {
 
 	# find col index for that candidate's name
 	cand_indx <- which(colnames(polling_df) == candidate)
@@ -191,7 +223,7 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 		if(plot == TRUE) {
 
 			# print model
-			print(summary(lm_model))
+			# print(summary(lm_model))
 
 			# plot data
 			plot(x=polling_df$days_to_caucus,
@@ -226,34 +258,35 @@ complexLinearExtrapolateCandidate <- function(candidate, polling_df, results_df,
 
 #### EPANECHNIKOV
 
-chooseEpanechnikovBandwidth <- function(eplog_mse) {
-	lowest_mse_indx <- which(eplog_mse$mse == min(eplog_mse$mse))
-	lowest_mse_bw <- eplog_mse$bw_value[lowest_mse_indx]
-	return(lowest_mse_indx)
-}
+# chooseEpanechnikovBandwidthTrendline <- function(eplog_mse) {
+# 	lowest_mse_indx <- which(eplog_mse$mse == min(eplog_mse$mse))
+# 	lowest_mse_bw <- eplog_mse$bw_value[lowest_mse_indx]
+# 	return(lowest_mse_indx)
+# }
 
-epanechnikovExtrapolateCandidate <- function(candidate_name, year_scope, results_df, plot) {
+epanechnikovExtrapolateCandidate <- function(candidate_name, year_scope, results_df, time_period, plot) {
 
-	# pull pred_vote_share from eplog
-	ep_bw <- chooseEpanechnikovBandwidth(eplog_mse)
-
-	pred_vote_share <- subset(eplog, year==year_scope[1] & scope==year_scope[2] & bw_value==ep_bw &candidate==candidate_name, select=estimate)
+	# extract estimated vote share
+	pred_vote_share <- subset(ep_preds, year==year_scope[1] & scope==year_scope[2] & bw_value==EP_BW & trendline_width==EP_TRENDLINE & candidate==candidate_name, select=estimate)
 
 	return(pred_vote_share[1,1])
 }
+
+# epanechnikovExtrapolateCandidate("mccain", c("2008", "national"), results2008, FALSE)
 
 # predCandidates
 # --------------
 # Given a list of candidates, polling data, and a model, generate predictions for each candidate
 # returns df with candidate names and predictions
-predCandidates <- function(polling_df, results_df, model) {
+predCandidates <- function(polling_df, results_df, model, time_period) {
 
 	# init df to store predictions
 	pred_votes <- data.frame(results_df$candidate, c(NA))
 	colnames(pred_votes) <- c('candidate', 'vote_share')
 
 	for (cand in results_df$candidate) {
-		pred_votes$vote_share[pred_votes$candidate == cand] <- model(cand, polling_df, results_df, FALSE)
+
+			pred_votes$vote_share[pred_votes$candidate == cand] <- model(cand, polling_df, results_df, time_period, FALSE)
 	}
 	return(pred_votes)
 }
@@ -273,44 +306,59 @@ calcRMSE <- function(pred_votes, results_df) {
 	return(rmse)
 }
 
-
 # testPollTrendsModel
 # -------------------
 # Given polling and results for an election, see how well a specified model extrapolates from polling data
-testPollTrendsModel <- function(polling_df, results_df, model) {
+testPollTrendsModel <- function(polling_df, results_df, model, time_period) {
 
-	pred_votes <- predCandidates(polling_df, results_df, model)
+	pred_votes <- predCandidates(polling_df, results_df, model, time_period)
 	rmse <- calcRMSE(pred_votes, results_df)
 	return(rmse)
 }
 
 
+## see what time period produces the lowest MSE for simple polling averages
+chooseAverageInterval <- function(polling_df, results_df) {
+	avg_days_test <- vector(length=21)
+
+	for (i in 1:28) {
+		avg_days_test[i] <- testPollTrendsModel(polling_df, results_df, averageLatestPollingCandidate, i)
+	}
+
+	return(
+		which(avg_days_test == min(avg_days_test, na.rm =TRUE))
+	)
+}
+
+AVG_INTERVAL <- chooseAverageInterval(polls2008_iowa, results2008) # 4 in 2008, 3 in 2012, go with 4
 
 ##############
 # BUILD & TEST COMBINED MODEL OPTIONS
 ##############
 
+predCandidates(polls2008_national, results2008, averageLatestPollingCandidate, AVG_INTERVAL)
 
 # buildPredictionMatrix
 # ---------------------
 # Given polling and results dfs, construct a matrix of observations to use in regression models
-buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, state, results_df) {
+buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope, results_df) {
 
 	# construct vector of predictor names
-	# pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl', 'ep_iowa')
-	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl')
-
-	print(head(results_df))
+	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl', 'ep_iowa', 'ep_natl', 'avg_iowa')
 
 	# build matrix of predictors
 	preds <- matrix(nrow=nrow(results_df), ncol=length(pred_names))
 	rownames(preds) <- results_df$candidate
 
 	# add polling model predictions
-	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate)$vote_share
-	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate)$vote_share
-	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate)$vote_share
-	# preds[,4] <- predCandidates(c(year, state), results_df, epanechnikovExtrapolateCandidate)$vote_share
+	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,4] <- predCandidates(c(year, scope), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,5] <- predCandidates(c(year, "national"), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,6] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
+
+
 
 	# add predictor names to matrix
 	colnames(preds) <- pred_names
@@ -349,6 +397,8 @@ scaleSortResults <- function(preds) {
 
 combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, results_df, combined) {
 
+	########### BUILD MATRICES ###########
+
 	# extract year and state from state_polling_df name
 	polling_df_str <- deparse(substitute(state_polling_df))
 	# strip out "polls"
@@ -357,9 +407,6 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	year_scope <- strsplit(year_scope_str, "_", fixed=TRUE)
 	year <- year_scope[[1]][1]
 	scope <- year_scope[[1]][2]
-
-	print(year)
-	# print(scope)
 
 	if (combined) {
 
@@ -382,24 +429,36 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 
 	# build matrix to predict 2016
 	preds_2016 <- buildPredictionMatrix(polls2016_iowa, polls2016_national, "2016", "iowa", candidates_2016)
-	
 
+
+
+	########### BUILD MODELS ###########
+	
 	# run simple linear regression 
 	linear_model <- lm(results_train$percentage ~ ., data=as.data.frame(preds_train))
+	print("############## LINEAR ##############")
 	print(summary(linear_model))
 
 	# run LASSO on predictors
 	lasso <- glmnet(x = preds_train, y = results_train$percentage)
-	summary(lasso)
 
 	# cross validate lasso
 	lasso_cv<- cv.glmnet(x = preds_train, y = results_train$percentage, nfolds = nrow(preds_train))
-	plot(lasso_cv)
+	# plot(lasso_cv)
 
 	# check RMSE
 	lasso_train_preds <- predict(lasso, newx=preds_train, s = lasso_cv$lambda.min )
-	print("RMSE:")
+	print("Training RMSE:")
 	print(rmse(results_train$percentage, lasso_train_preds))
+
+	# print out final model chosen by lasso
+	lasso_lowestMSE_index <- which(lasso$lambda == lasso_cv$lambda.min)
+	print("############## LASSO BETAS ##############")
+	print(lasso$beta[,lasso_lowestMSE_index])
+
+
+
+	########### PREDICT 2016 ###########
 
 	# predict 2016 using lasso
 	lasso_preds <- predict(lasso, newx=preds_2016, s = lasso_cv$lambda.min )
@@ -412,14 +471,10 @@ combinePredictorsIntoModel <- function(state_polling_df, natl_polling_df, result
 	# return(lasso)
 }
 
-combinePredictorsIntoModel(polls2008_iowa, polls2008_national, results2008, FALSE)
 combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, TRUE)
 
-
-length(lasso$lambda)
-
-names(lasso)
-
+combinePredictorsIntoModel(polls2008_iowa, polls2008_national, results2008, FALSE)
+combinePredictorsIntoModel(polls2012_iowa, polls2012_national, results2012, FALSE)
 
 
 

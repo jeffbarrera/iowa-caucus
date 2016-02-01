@@ -8,7 +8,7 @@ importr('lpridge')
 
 candidates = {
     2008:['GIULIANI','HUCKABEE','MCCAIN','PAUL','ROMNEY','THOMPSON'],
-    2012:['Romney','Gingrich','Santorum','Paul','Cain','Huntsman','Perry'],
+    2012:['Romney','Gingrich','Santorum','Paul','Huntsman','Perry'],
     2016:['Trump','Cruz','Rubio','Carson','Bush','Christie','Paul','Kasich','Huckabee']
 }
 
@@ -39,7 +39,7 @@ results = {
 def get_file_as_named_rows(filename):
     reader = csv.reader(open(filename, 'r'))
     results = {}
-    header = reader.next()
+    header = reader.__next__()
     for colname in header:
         results[colname] = []
     

@@ -1,16 +1,8 @@
 # iowa-caucus
-GOP Iowa Caucus prediction challenge for Poli Sci 355B.
 
-# Progress Updates
-Figured this could be a helpful way for me to keep track of things
+A statistical model to predict vote shares for Republican candidates in the 2016 Iowa Caucus. Created by Jeff Barrera and Jacob Fenton as a project for PoliSci 355B: Machine Learning for Social Scientists, taught by Justin Grimmer at Stanford University.
 
-### 1/27/16
-Jeff
-- Built initial framework to extrapolate election-day vote shares from polling predictions
-- Need to add evaluation suite to more precisely test model accuracy
-- Need to weight polls by 538's rankings
-- IDEA: might be worth averaging the result from this model (which is supposed to show trends) with the average vote share in the final few days (which theoretically should be more accurate). Or maybe try throwing both of these as predictors into a final model, along with the state/natl diff and the prediction markets?
-
+An explanation of our model is available at https://github.com/jeffbarrera/iowa-caucus/blob/master/writeup.pdf.
 
 
 # Data Sources
@@ -32,17 +24,3 @@ Surprisingly hard to find consistent data, the best I've got is Betfair for 2012
 - 2016: http://predictwise.com/politics/2016-president-primaries
 - 2012 IEM: http://tippie.uiowa.edu/iem/markets/republicannomination.html
 - 2012 Intrade: https://webcache.googleusercontent.com/search?q=cache:Xjm9JnxmvjoJ:https://wenowproject.wordpress.com/2012/01/02/betting-on-iowa-2/+&cd=1&hl=en&ct=clnk&gl=us&client=safari 
-
-
-
-------------------------
-
-- build model that extrapolates polling averages per candidate over time
-
-
-
-
-- consider extremizing state/natl difference
-- consider cutting off polling earlier than 30 days
-- 
-

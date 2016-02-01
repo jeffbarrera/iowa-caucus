@@ -29,7 +29,7 @@ if __name__ == "__main__":
     
     
     field_names = ['window_type', 'bw_value', 'year', 'scope', 'trendline_width', 'candidate', 'pre_interpolation', 'estimate']
-    outfilename  = "2016_predictions_national.csv"
+    outfilename  = "2008_predictions_national.csv"
     outfile = open(outfilename, 'w')
     outfile.write(",".join(field_names) +"\n")
     dw = csv.DictWriter(outfile, fieldnames=field_names, restval='', extrasaction='ignore')
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     
     for trendline_width in [TRENDLINE_WIDTH_BEST_VALUE]:
         bandwidth = BANDWIDTH_BEST_VALUE
-        print ">>> BANDWIDTH: %s" % bandwidth
+        print(">>> BANDWIDTH: %s" % bandwidth)
         
         for scope in ['national']:
             error_array = []
@@ -52,9 +52,9 @@ if __name__ == "__main__":
             # How many days ahead of the caucus does our polling end? 
              
             
-            for year in [2016,]:
+            for year in [2008,]:
 
-                print "Handling %s %s" % (year, scope)
+                print("Handling %s %s" % (year, scope))
                 result = get_file_as_named_rows('pollster/data/cleaned_' + str(year) + '_' + scope + '.csv')
                 days_to_caucus = result['days_to_caucus']
                 dtc_count = len(days_to_caucus)
@@ -63,9 +63,9 @@ if __name__ == "__main__":
                 dtc_vec = robjects.IntVector(days_to_caucus)
                 
             
-                #print "dtc:\n%s" % days_to_caucus
+                print("dtc:\n%s" % days_to_caucus)
                 for candidate in candidates[year]:
-                    print "handling candidate %s" % (candidate)
+                    print("handling candidate %s" % (candidate))
                     #candidate_result = results[year][candidate]
                 
                     candidate_data = result[candidate]
@@ -109,12 +109,12 @@ if __name__ == "__main__":
                         poll_trend <- structure(list(  x=c(cand_epan$x.out[num_steps-trendline_width], cand_epan$x.out[num_steps]), y=c(cand_epan$est[num_steps-trendline_width], cand_epan$est[num_steps])), .Names = c("x", "y"))
                     ''')
                     interpolated_est = robjects.r("unname(lm(y~x,data=poll_trend)$coefficients[1])")[0]
-                    print "Esimated value at %s days is %s ; interpolated est is %s" % (POLLING_CUTOFF, est_value, interpolated_est)
+                    # print "Esimated value at %s days is %s ; interpolated est is %s" % (POLLING_CUTOFF, est_value, interpolated_est)
                 
                     # field_names = ['window_type', 'bw_value', 'year', 'scope', 'candidate', 'result', 'estimate']
                     #squared_error = (candidate_result - interpolated_est)*(candidate_result - interpolated_est)
                     row_result = {'window_type':'epanechnikov', 'trendline_width':trendline_width, 'bw_value':bandwidth, 'year':year, 'scope':scope, 'candidate':candidate, 'pre_interpolation': est_value, 'estimate':interpolated_est}
-                    print row_result
+                    print(row_result)
                     
                     #error_array.append(squared_error)
                     

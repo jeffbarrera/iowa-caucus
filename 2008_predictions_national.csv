@@ -1,0 +1,6 @@
+window_type,bw_value,year,scope,trendline_width,candidate,pre_interpolation,estimate
+epanechnikov,13,2008,national,14,GIULIANI,22.440041661193167,21.349278588860138
+epanechnikov,13,2008,national,14,HUCKABEE,20.019315217595285,21.291408917767743
+epanechnikov,13,2008,national,14,MCCAIN,13.726072963386944,14.271584613361046
+epanechnikov,13,2008,national,14,PAUL,3.9007121812074237,3.5150440697833085
+epanechnikov,13,2008,national,14,ROMNEY,14.825524987332747,15.484202428188203
