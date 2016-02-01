@@ -1,5 +1,5 @@
 """
-
+Formerly this only handled national data; now run_epanechnikov does all of it, so this is a relic. 
 
 """
 
@@ -21,7 +21,7 @@ importr('lpridge')
 
 
 BANDWIDTH_BEST_VALUE = 13
-TRENDLINE_WIDTH_BEST_VALUE = 14
+TRENDLINE_WIDTH_BEST_VALUE = 2
 POLLING_CUTOFF = -2
 
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     
     
     field_names = ['window_type', 'bw_value', 'year', 'scope', 'trendline_width', 'candidate', 'pre_interpolation', 'estimate']
-    outfilename  = "2008_predictions_national.csv"
+    outfilename  = "2016_predictions.csv"
     outfile = open(outfilename, 'w')
     outfile.write(",".join(field_names) +"\n")
     dw = csv.DictWriter(outfile, fieldnames=field_names, restval='', extrasaction='ignore')
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             # How many days ahead of the caucus does our polling end? 
              
             
-            for year in [2008,]:
+            for year in [2016,]:
 
                 print("Handling %s %s" % (year, scope))
                 result = get_file_as_named_rows('pollster/data/cleaned_' + str(year) + '_' + scope + '.csv')

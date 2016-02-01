@@ -1,9 +1,6 @@
-"""
-
-
-"""
-
 '''
+Hacked up version of the test_epanechnikov_plus_interpolation to spit out just the predictions
+
 Estimate the 2016 results using the actual polling_cutoff value observed,
 the best results for a epanechnikov bandwidth, and a trendline width.
 '''
@@ -21,18 +18,14 @@ importr('lpridge')
 
 
 BANDWIDTH_BEST_VALUE = 13
-TRENDLINE_WIDTH_BEST_VALUE = 14
+TRENDLINE_WIDTH_BEST_VALUE = 1
+# how many days before the caucus does our data end? 
 POLLING_CUTOFF = -2
 
 
 if __name__ == "__main__":
     
-    
     field_names = ['window_type', 'bw_value', 'year', 'scope', 'trendline_width', 'candidate', 'pre_interpolation', 'estimate']
-    outfilename  = "2016_predictions.csv"
-    outfile = open(outfilename, 'w')
-    outfile.write(",".join(field_names) +"\n")
-    dw = csv.DictWriter(outfile, fieldnames=field_names, restval='', extrasaction='ignore')
     
     #mse_field_names = ['window_type', 'bw_value', 'trendline_width', 'scope',]
     #mse_outfilename  = "ep_interp_mse_pred.csv"
@@ -46,13 +39,20 @@ if __name__ == "__main__":
         bandwidth = BANDWIDTH_BEST_VALUE
         print ">>> BANDWIDTH: %s" % bandwidth
         
-        for scope in ['iowa']:
+        for scope in ['iowa', 'national']:
             error_array = []
             
-            # How many days ahead of the caucus does our polling end? 
-             
             
-            for year in [2016,]:
+            
+            for year in [2008,2012,2016]:
+                
+
+                outfilename  = "%s_predictions_%s.csv" % (year, scope)
+                outfile = open(outfilename, 'w')
+                outfile.write(",".join(field_names) +"\n")
+                dw = csv.DictWriter(outfile, fieldnames=field_names, restval='', extrasaction='ignore')
+                
+                
 
                 print "Handling %s %s" % (year, scope)
                 result = get_file_as_named_rows('pollster/data/cleaned_' + str(year) + '_' + scope + '.csv')
