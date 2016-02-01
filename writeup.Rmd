@@ -690,12 +690,9 @@ Reports filed with the Federal Elections Commission give some insight into a can
 
 -  The way that campaigns spend money is in flux and increasingly money spent is excluded from public accounting. 
 
-<<<<<<< HEAD
-=======
 ### Endorsements
 Fivethirtyeight uses a weighted endorsements system to help predict primary results. What their data [show](http://projects.fivethirtyeight.com/2016-endorsement-primary/), this year, however, is that there are far fewer endorsements this year than in previous cycles. The outsider nature of several candidates, and their relative paucity of endorsements to date, also makes us skeptical of this measure.
 
->>>>>>> jf_adds
 ### Crosstabs available in polls
 Most reputable polls provide results cross-tabulated by various demographic groups. Unfortunately, we were unable to find any easily available aggregation of poll crosstabs (and the inconsistent approach pollsters take would make this a considerable challenge). Nonetheless, we believe this might be a useful indicator. Were this data available in bulk we might be able to make different assumptions about the electorate. Data suggest many potential voters who say they plan to participate in caucuses do not actually do so; we believe voter subgroups' lie to pollsters at a differential rate, introducting a meaningful bias into polls. Careful consideration of prior years voter crosstabs and exit polls (confusing known as entrance polls in Iowa) might help.
 
