@@ -30,6 +30,7 @@ EP_TRENDLINE <- 14 # found by testing MSE at bandwidth 13 and different trendlin
 
 # Jeff's working directory -- comment out and override
 setwd("~//Documents/School/Stanford/Classes/Poli Sci 355B/Challenge 1/iowa-caucus")
+#setwd("/Users/jfenton/github-whitelabel/polisci_355b/iowa-caucus")
 
 
 ##############
@@ -547,7 +548,9 @@ __We predict XXX to be the winner of the 2016 Iowa Republican caucus.__
 
 We focused our attention on in-state polling leading up to the caucus, since this has historically been the best indicator of a candidates' standing in Iowa. We used polls aggregated for Iowa by pollster.com (which was later acqured by _The Huffington Post_) for [2008](http://www.pollster.com/polls/ia/08-ia-rep-pres-primary.html) and [2012](http://elections.huffingtonpost.com/pollster/2012-iowa-gop-primary.csv). (All of the code used in this project is available at: [https://github.com/jeffbarrera/iowa-caucus/](https://github.com/jeffbarrera/iowa-caucus/) ). We wrote python scripts ([2008](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2008_data.py) ; [2012/16](https://github.com/jeffbarrera/iowa-caucus/blob/master/pollster/clean_2012_2016_data.py) ) to standardize the data across years and add one key variable: the number of days before the Iowa Caucus is held.
 
-Our core challenge with this polling data was how to extrapolate a predicted vote share on caucus day from the multitude of polls conducted days or weeks earlier. To predict out a trend line to caucus day, we tested a number of approaches: linear regression, lowess regression and non-parametric regression with gaussian and epanechnekov kernels.
+Our core challenge with this polling data is twofold: First, to calculate a polling average that's accurate as of the present; and second, to use our knowledge of the present to estimate the final caucus vote totals. 
+
+We tested a number of approaches for finding a polling average by looking at 2008 and 2012 polling data (which goes all the way to caucus): linear regression, lowess regression and non-parametric regression with gaussian and epanechnekov kernels.
 
 ```{r, echo=FALSE, results="hide", fig.height=4}
 
@@ -626,7 +629,9 @@ plotExtrapolateCandidate("romney", polls2008_iowa, results2008, 0, TRUE)
 
 _Comparison of different extrapolation techniques applied to Mitt Romney in 2012: actual vote share in black, simple linear regression in red, lowess in blue, gaussian in orange, and epanechnekov in purple._
 
-We wrote scripts to test several techniques under a variety of circumstances: [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv)), and first-order non-parametric regression with [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
+Testing scripts are here for [lowess](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_lowess.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/lowesslog_mse.csv));  [gaussian](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_ksmooth_bandwidths.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/kplog_mse.csv)) and [epanechnikov](https://github.com/jeffbarrera/iowa-caucus/blob/master/test_epanechnikov_bandwidth.py) ([results](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv)) kernels. We tested each approach with a variety of bandwidths (or f values in the case of lowess) and compared the final estimated point with the actual polling result. The most accurate estimation result in terms of overall MSE for 2008 and 2012 was obtained using an epanechnikov kernel with a bandwidth of 13 days, which gave us an MSE of [7.29](https://github.com/jeffbarrera/iowa-caucus/blob/master/eplog_mse.csv#L14). 
+
+Arguably running this test naively--that is, just testing it on 2008 and 2012 without any cross-validation--could lead to a type of overfitting, but we'd expect the size of improvement to be minimal.
 
 ```{r, include=FALSE}
 
@@ -646,10 +651,7 @@ ep_min_mse <- min(ep_mse_df$mse)
 |------:|:-----:|:-----:|:-----:|:-----:|:-----:|
 | Lowest MSE | `r round(mse_simpleLinear, digits=2)` | `r round(mse_complexLinear, digits=2)` | `r round(lowess_min_mse, digits=2)` | `r round(gaussian_min_mse, digits=2)` | `r round(ep_min_mse, digits=2)` |
 
-
-TK TRENDLINE WIDTH
-
-One additional complication is that prior years' polling included results the day of the caucus; the most recent poll results we have access to are several days ahead of the caucus. Thus we had to interpolate from a point several days ahead of the caucus to a final result; we tested several approaches and found the best to be TK TK. 
+To answer the second half of the problem--how to interpolate from a polling average several days ahead of the caucus to a final vote share on caucus day, we assumed it would be best to start with the best polling average result. We tested a number of possible measures of the 'momentum' by drawing a line from the final average poll result and the result from several days earlier. Our testing suggested 14 days worked best. Again, this wasn't cross-validated in any way, but it sounds good--that's the last point outside of the epanechnikov window. We also assume that interpolation error isn't huge (Santorum 2012 aside).
 
 ```{r, echo=FALSE, fig.width=7, fig.height=3}
 
@@ -670,25 +672,28 @@ We then applied this model to generate a predicted vote share for each candidate
 In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-forecasting-the-2016-presidential-primary-election/), 538 uses national polling as a contrarian indicator, based on [data suggesting that candidates who poll better in a particular state than they do nationally tend to do better than their statewide polls](http://fivethirtyeight.com/features/to-win-in-iowa-or-new-hampshire-it-may-be-better-to-poll-worse-nationally/). We tried a similar approach, applying the epanechnikov technique we used to estimate statewide polling trends to national polling for each candidate. 
 
 ### Iowa Polling Average
-In case our trend projections were placing too much weight on the direction of the polling, we also included a simple average of the vote shares for each candidate in the days leading up to the election. We tested from 2 to 21 days out from the caucus, and calculated the RMSE for each interval. The lowest RMSE was at 4 days in 2008 and 3 days in 2012, so we went with the rounded average of 4 days.
+In case our interpolated projections were worse than the unimproved polling average several days out, we also included as a feature the vote shares for each candidate in the days leading up to the election. We tested from 2 to 21 days out from the caucus, and calculated the RMSE for each interval. The lowest RMSE was at 4 days in 2008 and 3 days in 2012, so we went with the rounded average of 4 days.
 
 ## Features Not Included
 
 We considered a number of additional features, but chose not to include them for various reasons:
 
 ### Campaign Finance Data
-Reports filed with the Federal Elections Commission give some insight into a candidates' fundraising and spending, but we chose to disregard these as not predictive of vote share for several reasons:
+Reports filed with the Federal Elections Commission give some insight into a candidates' fundraising and spending, but we didn't make analysis of those a priority  for several reasons:
 
-- This year is different! One candidate (guess who) has been the beneficiary of millions in "earned media" &mdash; coverage that's not paid for. Because he's been so effective in winning earned media, he hasn't sought contributions in the same manner as other candidates. Thus many of the usual governing assumptions (probably) don't hold.
+- This year is different! One candidate (guess who) has been the beneficiary of millions in "earned media" &mdash; coverage that's not paid for. 
 
-- Candidates' reports are filed at a significant lag. Quarterly reports covering the fourth quarter of 2015 are due Jan. 31, but do not reflect any spending or fundraising that took place in 2016. Polling data is generally much more current than that.
- 
+- Candidates' reports are filed at a significant lag. Quarterly reports covering the fourth quarter of 2015 are due Jan. 31, but do not reflect any spending or fundraising that took place in 2016. 
+
 - The 2012 and 2008 Iowa caucuses were held Jan. 2 (two days after the end of a filing period) whereas the 2016 caucuses are held Feb. 1 (a month after the end of the most recently available candidate spending data). Thus a relationship between financial figures for 2008 and 2012 wouldn't necessarily hold true for 2016. 
 
--  The way that campaigns spend money is in flux and increasingly money spent is excluded from public accounting. Increasingly spending from a candidates' principal campaign committee is overshadowed by money spent by independent expenditure only committees (aka super PACs). In 2012, super PACs primarly spent money on media buys, but increasingly these "outside" groups are taking on tasks previously handled by candidate committees, including last-minute voter targetting and mobilization. Other money spent by non-profit groups is not publically reported at all, and anecdotal reports suggest this type of spending is rising. 
+-  The way that campaigns spend money is in flux and increasingly money spent is excluded from public accounting. 
+
+### Endorsements
+Fivethirtyeight uses a weighted endorsements system to help predict primary results. What their data [show](http://projects.fivethirtyeight.com/2016-endorsement-primary/), this year, however, is that there are far fewer endorsements this year than in previous cycles. The outsider nature of several candidates, and their relative paucity of endorsements to date, also makes us skeptical of this measure.
 
 ### Crosstabs available in polls
-Most reputable polls provide results cross-tabulated by various demographic groups. Unfortunately, we were unable to find any easily available aggregation of poll crosstabs (and the inconsistent approach pollsters take would make this a considerable challenge). Nonetheless, we believe this might be a useful indicator. Were this data available in bulk we might be able to make different assumptions about the electorate. Data suggest many potential voters who say they plan to participate in caucuses do not actually do so; we believe voter subgroups' lie to pollsters at a differential rate, introducting a meaningful bias into polls.
+Most reputable polls provide results cross-tabulated by various demographic groups. Unfortunately, we were unable to find any easily available aggregation of poll crosstabs (and the inconsistent approach pollsters take would make this a considerable challenge). Nonetheless, we believe this might be a useful indicator. Were this data available in bulk we might be able to make different assumptions about the electorate. Data suggest many potential voters who say they plan to participate in caucuses do not actually do so; we believe voter subgroups' lie to pollsters at a differential rate, introducting a meaningful bias into polls. Careful consideration of prior years voter crosstabs and exit polls (confusing known as entrance polls in Iowa) might help.
 
 ## Model
 
