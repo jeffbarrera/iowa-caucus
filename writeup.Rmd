@@ -172,7 +172,7 @@ linearExtrapolateCandidate <- function(candidate, polling_df, results_df, time_p
 	cand_indx <- which(colnames(polling_df) == candidate)
 
 	# subset df to last 21 days, ignore last 2 days (no 2016 polling available)
-  polling_df <- subset(polling_df, days_to_caucus < 21 & days_to_caucus > 0)
+  polling_df <- subset(polling_df, days_to_caucus < 14 & days_to_caucus > 0)
 
 	# check if there are any rows that aren't NA
 	if(all(is.na(polling_df[,cand_indx]))) {
@@ -379,7 +379,7 @@ predCandidates(polls2008_national, results2008, averageLatestPollingCandidate, A
 buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope, results_df) {
 
   # construct vector of predictor names
-	pred_names <- c('lm_1_iowa', 'lm_2_iowa', 'lm_1_natl', 'ep_iowa', 'ep_natl', 'avg_iowa')
+	pred_names <- c('linear_iowa', 'linear_natl', 'ep_iowa', 'ep_natl', 'avg_iowa')
 
 	# build matrix of predictors
 	preds <- matrix(nrow=nrow(results_df), ncol=length(pred_names))
@@ -387,13 +387,12 @@ buildPredictionMatrix <- function(state_polling_df, natl_polling_df, year, scope
 
 	# add polling model predictions
 	preds[,1] <- predCandidates(state_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	preds[,2] <- predCandidates(state_polling_df, results_df, complexLinearExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	preds[,3] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	#preds[,3] <- 0 # ultimately didn't use linear national vote share
-	preds[,4] <- predCandidates(c(year, scope), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	preds[,5] <- predCandidates(c(year, "national"), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
-	preds[,6] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
-	# preds[,6] <- 0
+	preds[,2] <- predCandidates(natl_polling_df, results_df, linearExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	#preds[,2] <- 0 # ultimately didn't use linear national vote share
+	preds[,3] <- predCandidates(c(year, scope), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,4] <- predCandidates(c(year, "national"), results_df, epanechnikovExtrapolateCandidate, AVG_INTERVAL)$vote_share
+	preds[,5] <- predCandidates(state_polling_df, results_df, averageLatestPollingCandidate, AVG_INTERVAL)$vote_share
+	# preds[,5] <- 0
 
 
 	# add predictor names to matrix
@@ -667,15 +666,15 @@ plot(x=ep_mse_interp$trendline_width,
 
 We then applied this model to generate a predicted vote share for each candidate in the 2008, 2012, and 2016 caucuses.
 
+### National Polling Trends
+In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-forecasting-the-2016-presidential-primary-election/), 538 uses national polling as a contrarian indicator, based on [data suggesting that candidates who poll better in a particular state than they do nationally tend to do better than their statewide polls](http://fivethirtyeight.com/features/to-win-in-iowa-or-new-hampshire-it-may-be-better-to-poll-worse-nationally/). We tried a similar approach, applying the epanechnikov technique we used to estimate statewide polling trends to national polling for each candidate. 
+
 ### Iowa Polling Average
 In case our trend projections were placing too much weight on the direction of the polling, we also included a simple average of the vote shares for each candidate in the days leading up to the election. We tested from 2 to 21 days out from the caucus, and calculated the RMSE for each interval. The lowest RMSE was at 4 days in 2008 and 3 days in 2012, so we went with the rounded average of 4 days.
 
 ## Features Not Included
 
 We considered a number of additional features, but chose not to include them for various reasons:
-
-### National Polling Trends
-In their ["polls-plus" model](http://fivethirtyeight.com/features/how-we-are-forecasting-the-2016-presidential-primary-election/), 538 uses national polling as a contrarian indicator, based on [data suggesting that candidates who poll better in a particular state than they do nationally tend to do better than their statewide polls](http://fivethirtyeight.com/features/to-win-in-iowa-or-new-hampshire-it-may-be-better-to-poll-worse-nationally/). We tried a similar approach, applying the epanechnikov technique we used to estimate statewide polling trends to national polling for each candidate. However, we ultimately decided that since our training data didn't have a comparable case of a celebrity frontrunner, including this predictor skewed our results -- Trump was likely being over-penalized for his high national poll numbers. 
 
 ### Campaign Finance Data
 Reports filed with the Federal Elections Commission give some insight into a candidates' fundraising and spending, but we chose to disregard these as not predictive of vote share for several reasons:
